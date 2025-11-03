@@ -40,3 +40,9 @@ INIT.md
 PLAN.md
 CLAUDE.md
 .claude/
+
+#Java
+**/application-local.properties
+**/application-prod.properties
+**/.env.local
+**/.env.production.local
