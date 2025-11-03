@@ -35,11 +35,14 @@ dist/
 *.db
 
 # Claude
-phases/
 INIT.md
 PLAN.md
 CLAUDE.md
 .claude/
+phases/
+QUICK_START.md
+TESTING_GUIDE.md
+test-backend.sh
 
 #Java
 **/application-local.properties
