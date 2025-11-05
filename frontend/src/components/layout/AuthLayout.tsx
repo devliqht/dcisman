@@ -24,11 +24,9 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
     />
   </div>
     <Container className="relative overflow-hidden">
-      {/* Floating ghosts decoration */}
       <div className="absolute top-10 left-10 hidden md:block">
         <Ghost color="#FF0000" />
       </div>
-        {/* Floating ghosts decoration */}
         <div className='absolute top-10 left-10 hidden md:block'>
           <Ghost color='var(--color-ghost-red)' />
         </div>
@@ -42,7 +40,6 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           <Ghost color='var(--color-ghost-orange)' delay='1.5s' />
         </div>
 
-        {/* Main content */}
         <div className='relative z-10 w-full max-w-2xl flex flex-col items-center p-8'>
           {children}
         </div>
