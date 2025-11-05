@@ -1,3 +1,8 @@
 export { UserIcon } from './UserIcon';
 export { StatsIcon } from './StatsIcon';
 export { GamesIcon } from './GamesIcon';
+export { PauseIcon } from './PauseIcon';
+export { TrophyIcon } from './TrophyIcon';
+export { TargetIcon } from './TargetIcon';
+export { GhostEatenIcon } from './GhostEatenIcon';
+export { MedalIcon } from './MedalIcon';
