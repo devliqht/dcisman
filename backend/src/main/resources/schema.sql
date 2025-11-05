@@ -30,6 +30,24 @@ CREATE TABLE IF NOT EXISTS game_sessions (
     INDEX idx_started_at (started_at DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- User stats table
+CREATE TABLE IF NOT EXISTS user_stats (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL UNIQUE,
+    highest_score INT DEFAULT 0,
+    total_ghosts_eaten INT DEFAULT 0,
+    longest_time_played INT DEFAULT 0,
+    total_power_ups_used INT DEFAULT 0,
+    highest_level_reached INT DEFAULT 0,
+    total_games_played INT DEFAULT 0,
+    total_games_completed INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id),
+    INDEX idx_highest_score (highest_score DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Leaderboard table
 CREATE TABLE IF NOT EXISTS leaderboard (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
