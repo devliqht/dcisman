@@ -15,7 +15,6 @@ export class Ghost {
   private color: string;
   private mode: GhostMode = 'scatter';
   private direction: Direction = 'up';
-  private lastDirection: Direction = 'up';
   private speed = 3;
   private frightenedSpeed = 1.5; // slower when frightened
   private eatenSpeed = 6; // faster when returning to ghost house
