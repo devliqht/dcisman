@@ -49,7 +49,10 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:5173",
                 "http://localhost:5174",
-                "https://dcisman.gdgoc.tech"
+                "https://dcisman.gdgoc.tech",
+                "https://dcism.org",
+                "https://pacman.dcism.org",
+                "https://www.dcism.org"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));

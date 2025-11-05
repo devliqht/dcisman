@@ -43,6 +43,7 @@ phases/
 QUICK_START.md
 TESTING_GUIDE.md
 test-backend.sh
+DEPLOYMENT_SPLIT_ARCHITECTURE.md
 
 #Java
 **/application-local.properties
