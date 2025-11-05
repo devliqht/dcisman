@@ -49,7 +49,6 @@ export class GameEngine {
     this.sound = new SoundManager();
 
     this.renderInitialState();
-    this.sound.playLobbyMusic();
   }
 
   private renderInitialState(): void {

@@ -1,3 +1,12 @@
+// Import audio files as modules so Vite bundles them correctly
+import lobbyMusicUrl from './sfx/pacman_ringtone.mp3';
+import beginningSoundUrl from './sfx/pacman_beginning.wav';
+import chompSoundUrl from './sfx/pacman_chomp.wav';
+import deathSoundUrl from './sfx/pacman_death.wav';
+import eatGhostSoundUrl from './sfx/pacman_eatghost.wav';
+import eatFruitSoundUrl from './sfx/pacman_eatfruit.wav';
+import intermissionSoundUrl from './sfx/pacman_intermission.wav';
+
 export class SoundManager {
   private isMuted = false;
 
@@ -11,15 +20,16 @@ export class SoundManager {
 
   private currentlyPlaying: HTMLAudioElement | null = null;
   private isChompPlaying = false;
+  private hasUserInteracted = false;
 
   constructor() {
-    this.lobbyMusic = new Audio('/src/game/sfx/pacman_ringtone.mp3');
-    this.beginningSound = new Audio('/src/game/sfx/pacman_beginning.wav');
-    this.chompSound = new Audio('/src/game/sfx/pacman_chomp.wav');
-    this.deathSound = new Audio('/src/game/sfx/pacman_death.wav');
-    this.eatGhostSound = new Audio('/src/game/sfx/pacman_eatghost.wav');
-    this.eatFruitSound = new Audio('/src/game/sfx/pacman_eatfruit.wav');
-    this.intermissionSound = new Audio('/src/game/sfx/pacman_intermission.wav');
+    this.lobbyMusic = new Audio(lobbyMusicUrl);
+    this.beginningSound = new Audio(beginningSoundUrl);
+    this.chompSound = new Audio(chompSoundUrl);
+    this.deathSound = new Audio(deathSoundUrl);
+    this.eatGhostSound = new Audio(eatGhostSoundUrl);
+    this.eatFruitSound = new Audio(eatFruitSoundUrl);
+    this.intermissionSound = new Audio(intermissionSoundUrl);
 
     this.lobbyMusic.loop = true;
     this.lobbyMusic.volume = 0.5;
@@ -29,8 +39,12 @@ export class SoundManager {
     };
   }
 
+  public markUserInteraction(): void {
+    this.hasUserInteracted = true;
+  }
+
   public playLobbyMusic(): void {
-    if (!this.isMuted) {
+    if (!this.isMuted && this.hasUserInteracted) {
       this.lobbyMusic.play().catch(err => console.warn('Lobby music play failed:', err));
     }
   }
@@ -41,6 +55,7 @@ export class SoundManager {
   }
 
   public async playBeginning(): Promise<void> {
+    this.markUserInteraction();
     this.stopLobbyMusic();
     if (!this.isMuted) {
       this.currentlyPlaying = this.beginningSound;
