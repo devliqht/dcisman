@@ -2,7 +2,7 @@
 
 #### A web-based game inspired by Pac-Man with user authentication, leaderboard, and admin panel.
 
-<img src="https://skills.syvixor.com/api/icons?perline=15&i=java,spring,apachemaven,mysql,apache,googlecloud,typescript,axios,reactjs,vite,tailwindcss,bun,gsap"/>
+<img src="https://skills.syvixor.com/api/icons?perline=15&i=java,spring,apachemaven,mysql,apache,googlecloud,cloudflare,nginx,typescript,axios,reactjs,vite,tailwindcss,bun,gsap"/>
 
 ## Tech Stack
 - **Backend**: Spring Boot 3.2 (Java 17)
