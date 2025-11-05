@@ -45,7 +45,9 @@ export class SoundManager {
 
   public playLobbyMusic(): void {
     if (!this.isMuted && this.hasUserInteracted) {
-      this.lobbyMusic.play().catch(err => console.warn('Lobby music play failed:', err));
+      this.lobbyMusic
+        .play()
+        .catch(err => console.warn('Lobby music play failed:', err));
     }
   }
 
@@ -59,10 +61,18 @@ export class SoundManager {
     this.stopLobbyMusic();
     if (!this.isMuted) {
       this.currentlyPlaying = this.beginningSound;
-      await this.beginningSound.play().catch(err => console.warn('Beginning sound play failed:', err));
+      this.beginningSound
+        .play()
+        .catch(err => console.warn('Beginning sound play failed:', err));
 
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
+        const timeout = setTimeout(() => {
+          this.currentlyPlaying = null;
+          resolve();
+        }, 5000);
+
         this.beginningSound.onended = () => {
+          clearTimeout(timeout);
           this.currentlyPlaying = null;
           resolve();
         };
@@ -85,14 +95,18 @@ export class SoundManager {
   public playPowerPellet(): void {
     if (!this.isMuted) {
       this.eatFruitSound.currentTime = 0;
-      this.eatFruitSound.play().catch(err => console.warn('Power pellet sound play failed:', err));
+      this.eatFruitSound
+        .play()
+        .catch(err => console.warn('Power pellet sound play failed:', err));
     }
   }
 
   public playEatGhost(): void {
     if (!this.isMuted) {
       this.eatGhostSound.currentTime = 0;
-      this.eatGhostSound.play().catch(err => console.warn('Eat ghost sound play failed:', err));
+      this.eatGhostSound
+        .play()
+        .catch(err => console.warn('Eat ghost sound play failed:', err));
     }
   }
 
@@ -100,9 +114,11 @@ export class SoundManager {
     if (!this.isMuted) {
       this.currentlyPlaying = this.deathSound;
       this.deathSound.currentTime = 0;
-      await this.deathSound.play().catch(err => console.warn('Death sound play failed:', err));
+      await this.deathSound
+        .play()
+        .catch(err => console.warn('Death sound play failed:', err));
 
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         this.deathSound.onended = () => {
           this.currentlyPlaying = null;
           resolve();
@@ -115,9 +131,11 @@ export class SoundManager {
   public async playIntermission(): Promise<void> {
     if (!this.isMuted) {
       this.currentlyPlaying = this.intermissionSound;
-      await this.intermissionSound.play().catch(err => console.warn('Intermission sound play failed:', err));
+      await this.intermissionSound
+        .play()
+        .catch(err => console.warn('Intermission sound play failed:', err));
 
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         this.intermissionSound.onended = () => {
           this.currentlyPlaying = null;
           resolve();
@@ -127,11 +145,9 @@ export class SoundManager {
     return Promise.resolve();
   }
 
-  public playLevelComplete(): void {
-  }
+  public playLevelComplete(): void {}
 
-  public playGameOver(): void {
-  }
+  public playGameOver(): void {}
 
   public pause(): void {
     this.currentlyPlaying?.pause();
@@ -139,7 +155,9 @@ export class SoundManager {
 
   public resume(): void {
     if (!this.isMuted && this.currentlyPlaying) {
-      this.currentlyPlaying.play().catch(err => console.warn('Resume play failed:', err));
+      this.currentlyPlaying
+        .play()
+        .catch(err => console.warn('Resume play failed:', err));
     }
   }
 

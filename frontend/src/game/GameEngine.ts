@@ -3,6 +3,7 @@ import { Pacman } from './entities/Pacman';
 import { Ghost } from './entities/Ghost';
 import { InputManager } from './InputManager';
 import { SoundManager } from './SoundManager';
+import { ParticleSystem } from './ParticleSystem';
 
 export class GameEngine {
   private canvas: HTMLCanvasElement;
@@ -12,6 +13,8 @@ export class GameEngine {
   private ghosts: Ghost[];
   private input: InputManager;
   private sound: SoundManager;
+  private particles: ParticleSystem;
+  private onGameOverCallback?: () => void;
 
   private gameLoop: number | null = null;
   private lastTime: number = 0;
@@ -19,34 +22,47 @@ export class GameEngine {
   private isStarting: boolean = false;
   private isIntermission: boolean = false;
   private isDying: boolean = false;
+  private deathTimer: number = 0;
+  private isRespawning: boolean = false;
+  private respawnTimer: number = 0;
   private isEatingGhost: boolean = false;
   private eatingGhostTimer: number = 0;
 
   private score: number = 0;
   private level: number = 1;
   private lives: number = 3;
+  private gameTime: number = 0;
+  private ghostsEaten: number = 0;
+  private powerUpsUsed: number = 0;
 
-  private floatingTexts: Array<{ text: string; x: number; y: number; timer: number }> = [];
+  private floatingTexts: Array<{
+    text: string;
+    x: number;
+    y: number;
+    timer: number;
+  }> = [];
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, onGameOver?: () => void) {
     this.canvas = canvas;
     const context = canvas.getContext('2d');
     if (!context) {
       throw new Error('Failed to get 2D context');
     }
     this.ctx = context;
+    this.onGameOverCallback = onGameOver;
 
     this.maze = new Maze();
     this.pacman = new Pacman(9, 17);
     this.ghosts = [
-      new Ghost('blinky', 8, 8, '#FF0000'),  // Red - top left of ghost box
-      new Ghost('pinky', 9, 9, '#FFB8FF'),   // Pink - bottom right of ghost box
-      new Ghost('inky', 8, 9, '#00FFFF'),    // Cyan - bottom left of ghost box
-      new Ghost('clyde', 9, 8, '#FFB851'),   // Orange - top right of ghost box
+      new Ghost('blinky', 8, 8, '#FF0000'), // Red - top left of ghost box
+      new Ghost('pinky', 9, 9, '#FFB8FF'), // Pink - bottom right of ghost box
+      new Ghost('inky', 8, 9, '#00FFFF'), // Cyan - bottom left of ghost box
+      new Ghost('clyde', 9, 8, '#FFB851'), // Orange - top right of ghost box
     ];
 
     this.input = new InputManager();
     this.sound = new SoundManager();
+    this.particles = new ParticleSystem();
 
     this.renderInitialState();
   }
@@ -58,7 +74,6 @@ export class GameEngine {
     this.pacman.render(this.ctx);
     this.ghosts.forEach(ghost => ghost.render(this.ctx));
   }
-
 
   public async start(): Promise<void> {
     if (this.gameLoop || this.isStarting) return;
@@ -80,6 +95,49 @@ export class GameEngine {
     this.isPaused = false;
     this.lastTime = performance.now();
     this.sound.resume();
+  }
+
+  public reset(): void {
+    if (this.gameLoop) {
+      cancelAnimationFrame(this.gameLoop);
+      this.gameLoop = null;
+    }
+
+    this.score = 0;
+    this.level = 1;
+    this.lives = 3;
+    this.gameTime = 0;
+    this.ghostsEaten = 0;
+    this.powerUpsUsed = 0;
+
+    this.isPaused = false;
+    this.isStarting = false;
+    this.isIntermission = false;
+    this.isDying = false;
+    this.deathTimer = 0;
+    this.isRespawning = false;
+    this.respawnTimer = 0;
+    this.isEatingGhost = false;
+    this.eatingGhostTimer = 0;
+
+    this.floatingTexts = [];
+
+    this.maze = new Maze();
+
+    this.pacman = new Pacman(9, 17);
+
+    this.ghosts = [
+      new Ghost('blinky', 8, 8, '#FF0000'),
+      new Ghost('pinky', 9, 9, '#FFB8FF'),
+      new Ghost('inky', 8, 9, '#00FFFF'),
+      new Ghost('clyde', 9, 8, '#FFB851'),
+    ];
+
+    this.particles = new ParticleSystem();
+
+    this.renderInitialState();
+
+    this.updateUI();
   }
 
   public destroy(): void {
@@ -108,6 +166,31 @@ export class GameEngine {
   }
 
   private updateGame(deltaTime: number): void {
+    this.gameTime += deltaTime;
+
+    this.particles.update(deltaTime);
+
+    if (this.isDying) {
+      this.deathTimer -= deltaTime;
+      this.pacman.updateMelting(deltaTime);
+      if (this.deathTimer <= 0) {
+        this.isDying = false;
+        this.respawnAll();
+        this.isRespawning = true;
+        this.respawnTimer = 0.8;
+        this.particles.createRespawnParticles(
+          this.pacman.x,
+          this.pacman.y,
+          '#FFD700'
+        );
+        this.ghosts.forEach(ghost => {
+          this.particles.createRespawnParticles(ghost.x, ghost.y, ghost.color);
+        });
+      }
+      this.updateUI();
+      return;
+    }
+
     if (this.isEatingGhost) {
       this.eatingGhostTimer -= deltaTime;
       this.floatingTexts = this.floatingTexts.filter(text => {
@@ -121,7 +204,11 @@ export class GameEngine {
       return;
     }
 
-    if (this.isDying) {
+    if (this.isRespawning) {
+      this.respawnTimer -= deltaTime;
+      if (this.respawnTimer <= 0) {
+        this.isRespawning = false;
+      }
       this.updateUI();
       return;
     }
@@ -149,9 +236,29 @@ export class GameEngine {
 
     this.maze.render(this.ctx);
 
-    this.pacman.render(this.ctx);
+    if (!this.isIntermission) {
+      if (this.isDying) {
+        this.pacman.render(this.ctx);
+      } else if (this.isRespawning) {
+        this.ctx.save();
+        this.ctx.globalAlpha = 0.5 + (this.respawnTimer / 0.8) * 0.5;
+        this.pacman.render(this.ctx);
+        this.ctx.restore();
+      } else {
+        this.pacman.render(this.ctx);
+      }
 
-    this.ghosts.forEach(ghost => ghost.render(this.ctx));
+      if (this.isRespawning) {
+        this.ctx.save();
+        this.ctx.globalAlpha = 0.5 + (this.respawnTimer / 0.8) * 0.5;
+        this.ghosts.forEach(ghost => ghost.render(this.ctx));
+        this.ctx.restore();
+      } else {
+        this.ghosts.forEach(ghost => ghost.render(this.ctx));
+      }
+    }
+
+    this.particles.render(this.ctx);
 
     this.floatingTexts.forEach(text => {
       this.ctx.save();
@@ -170,6 +277,7 @@ export class GameEngine {
       this.sound.playChomp();
 
       if (pellet.isPowerPellet) {
+        this.powerUpsUsed++;
         this.ghosts.forEach(g => g.setFrightened(true));
         this.sound.playPowerPellet();
       }
@@ -180,13 +288,29 @@ export class GameEngine {
         if (ghost.isFrightened) {
           const points = 200;
           this.score += points;
+          this.ghostsEaten++;
 
           this.floatingTexts.push({
             text: `+${points}`,
             x: ghost.x * 48 + 24,
             y: ghost.y * 48 + 24,
-            timer: 1.5
+            timer: 1.5,
           });
+
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = 48;
+          tempCanvas.height = 48;
+          const tempCtx = tempCanvas.getContext('2d');
+          if (tempCtx) {
+            ghost.render(tempCtx);
+            this.particles.createDisintegrationFromCanvas(
+              tempCtx,
+              ghost.x,
+              ghost.y,
+              48,
+              48
+            );
+          }
 
           ghost.setEaten(true);
           this.sound.playEatGhost();
@@ -208,24 +332,34 @@ export class GameEngine {
     const scoreEl = document.getElementById('game-score');
     const levelEl = document.getElementById('game-level');
     const livesEl = document.getElementById('game-lives');
+    const timeEl = document.getElementById('game-time');
 
     if (scoreEl) scoreEl.textContent = this.score.toString();
     if (levelEl) levelEl.textContent = this.level.toString();
     if (livesEl) livesEl.textContent = this.lives.toString();
+    if (timeEl) {
+      const totalSeconds = Math.floor(this.gameTime);
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      timeEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
   }
 
-  private async handleDeath(): Promise<void> {
+  private handleDeath(): void {
+    if (this.isDying) return; 
+
     this.lives--;
     this.isDying = true;
+    this.deathTimer = 1.5; 
 
-    await this.sound.playDeath();
+    this.pacman.startMelting();
 
-    this.respawnAll();
-    this.isDying = false;
-    this.lastTime = performance.now();
+    this.sound.playDeath();
 
     if (this.lives === 0) {
-      this.gameOver();
+      setTimeout(() => {
+        this.gameOver();
+      }, 2000);
     }
   }
 
@@ -251,7 +385,33 @@ export class GameEngine {
   private gameOver(): void {
     this.pause();
     this.sound.playGameOver();
-    // TODO: Trigger game over UI
-    // TODO: Save session to backend
+
+    if (this.onGameOverCallback) {
+      this.onGameOverCallback();
+    }
+  }
+
+  public getScore(): number {
+    return this.score;
+  }
+
+  public getLevel(): number {
+    return this.level;
+  }
+
+  public getLives(): number {
+    return this.lives;
+  }
+
+  public getGameTime(): number {
+    return Math.floor(this.gameTime);
+  }
+
+  public getGhostsEaten(): number {
+    return this.ghostsEaten;
+  }
+
+  public getPowerUpsUsed(): number {
+    return this.powerUpsUsed;
   }
 }

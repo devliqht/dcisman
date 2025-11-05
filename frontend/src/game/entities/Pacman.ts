@@ -13,7 +13,9 @@ export class Pacman {
 
   private animationFrame = 0;
   private animationTimer = 0;
-  private mouthAngle = 0;
+
+  private isMelting = false;
+  private meltProgress = 0;
 
   private readonly startX: number;
   private readonly startY: number;
@@ -34,11 +36,9 @@ export class Pacman {
   ): void {
     this.animationTimer += deltaTime;
     if (this.animationTimer > 0.1) {
-      this.animationFrame = (this.animationFrame + 1) % 3;
+      this.animationFrame = (this.animationFrame + 1) % 2;
       this.animationTimer = 0;
     }
-
-    this.mouthAngle = this.animationFrame * 15;
 
     if (inputDirection !== null) {
       this.nextDirection = inputDirection;
@@ -137,8 +137,52 @@ export class Pacman {
     return !maze.isWall(nextX, nextY);
   }
 
+  private getPacmanPixels(): number[][] {
+    const mouthOpen = this.animationFrame === 1;
+
+    if (mouthOpen) {
+      return [
+        [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+        [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+        [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+      ];
+    } else {
+      return [
+        [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+        [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+        [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+      ];
+    }
+  }
+
   public render(ctx: CanvasRenderingContext2D): void {
+    if (this.isMelting) {
+      this.renderMelting(ctx);
+      return;
+    }
+
+    const pixels = this.getPacmanPixels();
+    const pixelSize = 4;
+    const spriteSize = 11;
+
     ctx.save();
+    ctx.imageSmoothingEnabled = false;
     ctx.translate(this.pixelX, this.pixelY);
 
     switch (this.direction) {
@@ -154,18 +198,73 @@ export class Pacman {
     }
 
     ctx.fillStyle = '#FFFF00';
+    const offset = -(spriteSize * pixelSize) / 2;
+
     ctx.beginPath();
-    ctx.arc(
-      0,
-      0,
-      22,
-      (this.mouthAngle * Math.PI) / 180,
-      ((360 - this.mouthAngle) * Math.PI) / 180
-    );
-    ctx.lineTo(0, 0);
+    for (let y = 0; y < spriteSize; y++) {
+      for (let x = 0; x < spriteSize; x++) {
+        if (pixels[y][x] === 1) {
+          ctx.rect(
+            offset + x * pixelSize,
+            offset + y * pixelSize,
+            pixelSize,
+            pixelSize
+          );
+        }
+      }
+    }
     ctx.fill();
 
     ctx.restore();
+  }
+
+  private renderMelting(ctx: CanvasRenderingContext2D): void {
+    const pixels = this.getPacmanPixels();
+    const pixelSize = 4;
+    const spriteSize = 11;
+
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.translate(this.pixelX, this.pixelY);
+
+    const offset = -(spriteSize * pixelSize) / 2;
+
+    const rowsToRemove = Math.floor(this.meltProgress * spriteSize);
+
+    ctx.fillStyle = '#FFFF00';
+
+    ctx.beginPath();
+    for (let y = rowsToRemove; y < spriteSize; y++) {
+      for (let x = 0; x < spriteSize; x++) {
+        if (pixels[y][x] === 1) {
+          const dropOffset = y < rowsToRemove + 2 ? Math.random() * 2 : 0;
+
+          ctx.rect(
+            offset + x * pixelSize,
+            offset + y * pixelSize + dropOffset,
+            pixelSize,
+            pixelSize
+          );
+        }
+      }
+    }
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  public startMelting(): void {
+    this.isMelting = true;
+    this.meltProgress = 0;
+  }
+
+  public updateMelting(deltaTime: number): void {
+    if (this.isMelting) {
+      this.meltProgress += deltaTime * 0.7;
+      if (this.meltProgress > 1) {
+        this.meltProgress = 1;
+      }
+    }
   }
 
   public respawn(): void {
@@ -175,5 +274,7 @@ export class Pacman {
     this.pixelY = this.y * 48 + 24;
     this.direction = null;
     this.nextDirection = null;
+    this.isMelting = false;
+    this.meltProgress = 0;
   }
 }

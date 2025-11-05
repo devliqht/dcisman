@@ -12,7 +12,7 @@ export class Ghost {
   private pixelY: number;
 
   private name: GhostName;
-  private color: string;
+  public color: string;
   private mode: GhostMode = 'scatter';
   private direction: Direction = 'up';
   private speed = 3;
@@ -393,23 +393,83 @@ export class Ghost {
     this.flickerTimer = 0;
   }
 
+  // 0 = transparent, 1 = body, 2 = eye white, 3 = eye pupil
+  private getGhostPixels(): number[][] {
+    return [
+      [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
+      [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+      [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+      [0, 1, 2, 2, 1, 1, 1, 2, 2, 1, 0],
+      [1, 1, 2, 2, 1, 1, 1, 2, 2, 1, 1],
+      [1, 1, 3, 3, 1, 1, 1, 3, 3, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1],
+    ];
+  }
+
+  private getEyesOnlyPixels(): number[][] {
+    return [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 2, 2, 0, 0, 0, 2, 2, 0, 0],
+      [0, 0, 2, 2, 0, 0, 0, 2, 2, 0, 0],
+      [0, 0, 3, 3, 0, 0, 0, 3, 3, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ];
+  }
+
   public render(ctx: CanvasRenderingContext2D): void {
     if (this.respawnDelay > 0) return;
 
+    const pixelSize = 4;
+    const spriteSize = 11;
+    const offset = -(spriteSize * pixelSize) / 2;
+
     ctx.save();
+    ctx.imageSmoothingEnabled = false;
     ctx.translate(this.pixelX, this.pixelY);
 
     if (this.eaten) {
+      const pixels = this.getEyesOnlyPixels();
+
       ctx.fillStyle = '#FFFFFF';
       ctx.beginPath();
-      ctx.arc(-7, -5, 6, 0, Math.PI * 2);
-      ctx.arc(7, -5, 6, 0, Math.PI * 2);
+      for (let y = 0; y < spriteSize; y++) {
+        for (let x = 0; x < spriteSize; x++) {
+          if (pixels[y][x] === 2) {
+            ctx.rect(
+              offset + x * pixelSize,
+              offset + y * pixelSize,
+              pixelSize,
+              pixelSize
+            );
+          }
+        }
+      }
       ctx.fill();
 
       ctx.fillStyle = '#000000';
       ctx.beginPath();
-      ctx.arc(-7, -5, 3, 0, Math.PI * 2);
-      ctx.arc(7, -5, 3, 0, Math.PI * 2);
+      for (let y = 0; y < spriteSize; y++) {
+        for (let x = 0; x < spriteSize; x++) {
+          if (pixels[y][x] === 3) {
+            ctx.rect(
+              offset + x * pixelSize,
+              offset + y * pixelSize,
+              pixelSize,
+              pixelSize
+            );
+          }
+        }
+      }
       ctx.fill();
 
       ctx.restore();
@@ -431,30 +491,55 @@ export class Ghost {
       bodyColor = '#FFFFFF';
     }
 
+    const pixels = this.getGhostPixels();
+
     ctx.fillStyle = bodyColor;
     ctx.beginPath();
-    ctx.arc(0, 0, 22, Math.PI, 0, false);
-    ctx.lineTo(22, 24);
-    ctx.lineTo(16, 17);
-    ctx.lineTo(8, 24);
-    ctx.lineTo(0, 17);
-    ctx.lineTo(-8, 24);
-    ctx.lineTo(-16, 17);
-    ctx.lineTo(-22, 24);
-    ctx.closePath();
+    for (let y = 0; y < spriteSize; y++) {
+      for (let x = 0; x < spriteSize; x++) {
+        if (pixels[y][x] === 1) {
+          ctx.rect(
+            offset + x * pixelSize,
+            offset + y * pixelSize,
+            pixelSize,
+            pixelSize
+          );
+        }
+      }
+    }
     ctx.fill();
 
     if (this.mode !== 'frightened') {
       ctx.fillStyle = '#FFFFFF';
       ctx.beginPath();
-      ctx.arc(-7, -5, 6, 0, Math.PI * 2);
-      ctx.arc(7, -5, 6, 0, Math.PI * 2);
+      for (let y = 0; y < spriteSize; y++) {
+        for (let x = 0; x < spriteSize; x++) {
+          if (pixels[y][x] === 2) {
+            ctx.rect(
+              offset + x * pixelSize,
+              offset + y * pixelSize,
+              pixelSize,
+              pixelSize
+            );
+          }
+        }
+      }
       ctx.fill();
 
       ctx.fillStyle = '#000000';
       ctx.beginPath();
-      ctx.arc(-7, -5, 3, 0, Math.PI * 2);
-      ctx.arc(7, -5, 3, 0, Math.PI * 2);
+      for (let y = 0; y < spriteSize; y++) {
+        for (let x = 0; x < spriteSize; x++) {
+          if (pixels[y][x] === 3) {
+            ctx.rect(
+              offset + x * pixelSize,
+              offset + y * pixelSize,
+              pixelSize,
+              pixelSize
+            );
+          }
+        }
+      }
       ctx.fill();
     }
 

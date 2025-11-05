@@ -10,7 +10,7 @@ export class Maze {
 
   private tiles: Tile[][] = [];
   private pelletsRemaining = 0;
-  private flashPellets = false;
+  private flashWalls = false;
   private flashTimer = 0;
 
   constructor() {
@@ -119,17 +119,17 @@ export class Maze {
         }
       });
     });
-    this.flashPellets = false;
+    this.flashWalls = false;
     this.flashTimer = 0;
   }
 
   public startFlashing(): void {
-    this.flashPellets = true;
+    this.flashWalls = true;
     this.flashTimer = 0;
   }
 
   public updateFlash(deltaTime: number): void {
-    if (this.flashPellets) {
+    if (this.flashWalls) {
       this.flashTimer += deltaTime;
     }
   }
@@ -141,7 +141,73 @@ export class Maze {
     return this.tiles[y][x].type === 'wall';
   }
 
+  // pixelated pellet (3x3 grid)
+  private renderPellet(
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number
+  ): void {
+    const pixelSize = 2;
+    const pixels = [
+      [0, 1, 0],
+      [1, 1, 1],
+      [0, 1, 0],
+    ];
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    for (let y = 0; y < 3; y++) {
+      for (let x = 0; x < 3; x++) {
+        if (pixels[y][x] === 1) {
+          ctx.rect(
+            centerX - 3 + x * pixelSize,
+            centerY - 3 + y * pixelSize,
+            pixelSize,
+            pixelSize
+          );
+        }
+      }
+    }
+    ctx.fill();
+  }
+
+  // pixelated power pellet (7x7 grid)
+  private renderPowerPellet(
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number
+  ): void {
+    const pixelSize = 2;
+    const pixels = [
+      [0, 0, 1, 1, 1, 0, 0],
+      [0, 1, 1, 1, 1, 1, 0],
+      [1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1],
+      [0, 1, 1, 1, 1, 1, 0],
+      [0, 0, 1, 1, 1, 0, 0],
+    ];
+
+    ctx.fillStyle = '#FFF380';
+    ctx.beginPath();
+    for (let y = 0; y < 7; y++) {
+      for (let x = 0; x < 7; x++) {
+        if (pixels[y][x] === 1) {
+          ctx.rect(
+            centerX - 7 + x * pixelSize,
+            centerY - 7 + y * pixelSize,
+            pixelSize,
+            pixelSize
+          );
+        }
+      }
+    }
+    ctx.fill();
+  }
+
   public render(ctx: CanvasRenderingContext2D): void {
+    ctx.imageSmoothingEnabled = false;
+
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
         const tile = this.tiles[y][x];
@@ -151,36 +217,20 @@ export class Maze {
         switch (tile.type) {
           case 'pellet':
             if (!tile.collected) {
-              const shouldShow = !this.flashPellets || Math.floor(this.flashTimer * 6) % 2 === 0;
-              if (shouldShow) {
-                ctx.fillStyle = '#FFFFFF';
-                ctx.beginPath();
-                ctx.arc(
-                  px + this.tileSize / 2,
-                  py + this.tileSize / 2,
-                  5,
-                  0,
-                  Math.PI * 2
-                );
-                ctx.fill();
-              }
+              this.renderPellet(
+                ctx,
+                px + this.tileSize / 2,
+                py + this.tileSize / 2
+              );
             }
             break;
           case 'power-pellet':
             if (!tile.collected) {
-              const shouldShow = !this.flashPellets || Math.floor(this.flashTimer * 6) % 2 === 0;
-              if (shouldShow) {
-                ctx.fillStyle = '#FFF380';
-                ctx.beginPath();
-                ctx.arc(
-                  px + this.tileSize / 2,
-                  py + this.tileSize / 2,
-                  12,
-                  0,
-                  Math.PI * 2
-                );
-                ctx.fill();
-              }
+              this.renderPowerPellet(
+                ctx,
+                px + this.tileSize / 2,
+                py + this.tileSize / 2
+              );
             }
             break;
           case 'ghost-house':
@@ -190,6 +240,11 @@ export class Maze {
         }
       }
     }
+
+    // flash walls during intermission
+    const shouldShowWalls =
+      !this.flashWalls || Math.floor(this.flashTimer * 6) % 2 === 0;
+    if (!shouldShowWalls) return;
 
     ctx.strokeStyle = '#2121DE';
     ctx.lineWidth = 8;
