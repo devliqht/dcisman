@@ -61,11 +61,11 @@ export class Ghost {
   private getScatterTarget(name: GhostName): { x: number; y: number } {
     switch (name) {
       case 'blinky':
-        return { x: 17, y: 0 }; 
+        return { x: 17, y: 0 };
       case 'pinky':
-        return { x: 0, y: 0 }; 
+        return { x: 0, y: 0 };
       case 'inky':
-        return { x: 17, y: 19 }; 
+        return { x: 17, y: 19 };
       case 'clyde':
         return { x: 0, y: 19 };
     }
@@ -79,7 +79,7 @@ export class Ghost {
         this.mode = 'scatter';
         this.flickerTimer = 0;
       }
-      return; 
+      return;
     }
 
     if (this.inGhostHouse) {
@@ -112,7 +112,7 @@ export class Ghost {
 
     if (!this.eaten) {
       const target = this.inGhostHouse
-        ? { x: 9, y: 7 } 
+        ? { x: 9, y: 7 }
         : this.getTargetTile(pacman);
       this.moveTowardsTarget(target, maze, deltaTime);
     }
@@ -236,10 +236,16 @@ export class Ghost {
           this.stuckCounter++;
 
           if (this.stuckCounter > 2 && validDirectionsFound > 1) {
-            const perpendicularDirections = this.getPerpendicularDirections(this.direction);
+            const perpendicularDirections = this.getPerpendicularDirections(
+              this.direction
+            );
 
             for (const dir of perpendicularDirections) {
-              const next = this.getNextPosition(dir, currentTileX, currentTileY);
+              const next = this.getNextPosition(
+                dir,
+                currentTileX,
+                currentTileY
+              );
               const nextTile = maze.getTileAt(next.x, next.y);
               const isWall = maze.isWall(next.x, next.y);
               const isGhostHouse = nextTile?.type === 'ghost-house';
@@ -255,7 +261,6 @@ export class Ghost {
           this.stuckCounter = 0;
         }
 
-        this.lastDirection = this.direction;
         this.direction = bestDirection;
       }
 
@@ -411,8 +416,10 @@ export class Ghost {
       return;
     }
 
-    const shouldFlicker = this.mode === 'frightened' && this.frightenedTimer < 2;
-    const flickerVisible = !shouldFlicker || Math.floor(this.flickerTimer * 10) % 2 === 0;
+    const shouldFlicker =
+      this.mode === 'frightened' && this.frightenedTimer < 2;
+    const flickerVisible =
+      !shouldFlicker || Math.floor(this.flickerTimer * 10) % 2 === 0;
 
     if (!flickerVisible) {
       ctx.restore();
