@@ -1,6 +1,6 @@
 import React from 'react';
-import { Container } from '../ui';
-import { Ghost } from '../decorative';
+import { Container } from '@/components/ui';
+import { Ghost } from '@/components/decorative';
 import DotGrid from '@/components/DotGrid';
 
 interface AuthLayoutProps {

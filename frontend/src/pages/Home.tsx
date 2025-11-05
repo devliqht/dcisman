@@ -1,7 +1,7 @@
 import React from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { MainLayout } from '../components/layout';
-import { Button, Card, Container } from '../components/ui';
+import { useAuth } from '@/hooks/useAuth';
+import { MainLayout } from '@/components/layout';
+import { Button, Card, Container } from '@/components/ui';
 
 export const Home: React.FC = () => {
   const { user, logout } = useAuth();

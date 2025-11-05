@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { AuthLayout } from '../components/layout';
-import { Button, Input, Card } from '../components/ui';
-import { Pellet } from '../components/decorative';
+import { useAuth } from '@/hooks/useAuth';
+import { AuthLayout } from '@/components/layout';
+import { Button, Input, Card } from '@/components/ui';
+import { Pellet } from '@/components/decorative';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -76,7 +76,7 @@ export const Login: React.FC = () => {
           <h1 className='text-pacman-yellow font-family-arcade text-6xl mb-2 text-center'>
             DCISMan
           </h1>
-          <p className='text-ghost-cyan font-family-vt323 text-lg'>
+          <p className='text-ghost-cyan font-family-vt323 text-2xl'>
             Login to Play
           </p>
         </div>

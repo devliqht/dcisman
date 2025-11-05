@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { Login, Register, Home } from './pages';
+import { AuthProvider } from '@/context/AuthContext';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { Login, Register, Dashboard } from '@/pages';
 
 function App() {
   return (
@@ -14,7 +14,7 @@ function App() {
             path="/"
             element={
               <ProtectedRoute>
-                <Home />
+                <Dashboard />
               </ProtectedRoute>
             }
           />

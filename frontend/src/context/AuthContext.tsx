@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import authService from '../services/authService';
+import authService from '@/services/authService';
 import { AuthContext } from './createAuthContext';
 import type {
   AuthContextType,
   AuthResponse,
   LoginRequest,
   RegisterRequest,
-} from '../types';
+} from '@/types';
 
 interface AuthProviderProps {
   children: React.ReactNode;

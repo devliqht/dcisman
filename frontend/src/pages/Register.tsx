@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { AuthLayout } from '../components/layout';
-import { Button, Input, Card } from '../components/ui';
-import { Pellet } from '../components/decorative';
+import { useAuth } from '@/hooks/useAuth';
+import { AuthLayout } from '@/components/layout';
+import { Button, Input, Card } from '@/components/ui';
+import { Pellet } from '@/components/decorative';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
