@@ -9,6 +9,8 @@ A web-based game inspired by Pac-Man with user authentication, leaderboard, and 
 - **Deployment**: Google Cloud VM
 
 
-## CIS 2103 Finals Submissions
+# You can access the game via:
+- https://pacman.dcism.org
+- https://dcisman.gdgoc.tech
 
 
