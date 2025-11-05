@@ -22,6 +22,33 @@ The DCISMan backend provides a REST API for user authentication and game functio
 | `/auth/me` | GET | Get current user information | Yes |
 | `/auth/logout` | POST | Logout user | No |
 
+### Game Session Endpoints
+
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/game-sessions/start` | POST | Start a new game session | Yes |
+| `/game-sessions/{id}` | PUT | Update game session stats | Yes |
+| `/game-sessions/{id}/end` | POST | End a game session | Yes |
+| `/game-sessions` | GET | Get all user's sessions | Yes |
+| `/game-sessions/{id}` | GET | Get specific session | Yes |
+| `/game-sessions/active` | GET | Get current active session | Yes |
+
+### Stats Endpoints
+
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/stats/me` | GET | Get current user's statistics | Yes |
+| `/stats/user/{userId}` | GET | Get stats for specific user | Yes |
+
+### Leaderboard Endpoints
+
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/leaderboard` | GET | Get all leaderboards | No |
+| `/leaderboard/high-score` | GET | Get high score leaderboard | No |
+| `/leaderboard/highest-level` | GET | Get highest level leaderboard | No |
+| `/leaderboard/total-ghosts` | GET | Get total ghosts leaderboard | No |
+
 ### Health Check Endpoints
 
 | Endpoint | Method | Description | Auth Required |
@@ -36,7 +63,10 @@ Each endpoint has its own detailed testing guide:
 2. [Login User](./login.md) - `/api/auth/login`
 3. [Get Current User](./me.md) - `/api/auth/me`
 4. [Logout User](./logout.md) - `/api/auth/logout`
-5. [Health Check](./health.md) - `/api/health`
+5. [Game Sessions](./game-sessions.md) - `/api/game-sessions/*`
+6. [User Stats](./stats.md) - `/api/stats/*`
+7. [Leaderboard](./leaderboard.md) - `/api/leaderboard/*`
+8. [Health Check](./health.md) - `/api/health`
 
 ## Authentication
 
