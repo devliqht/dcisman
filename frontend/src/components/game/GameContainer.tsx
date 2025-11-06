@@ -1,9 +1,9 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui';
-import { GameEngine } from '@/game/GameEngine';
+import { GameEngine } from '@/engine/GameEngine';
 import { GameOverModal } from './GameOverModal';
-import { ConfirmationModal } from './ConfirmationModal';
+import { ConfirmationModal } from '@/components/common/ConfirmationModal';
 import { InGameStats } from './InGameStats';
 import { StartGameMenu } from './StartGameMenu';
 import { PauseMenu } from './PauseMenu';
@@ -43,6 +43,8 @@ export const GameContainer: React.FC<GameContainerProps> = ({
   );
   const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
   const [showRecentGamesConfirm, setShowRecentGamesConfirm] = useState(false);
+  const [showLeaderboardsConfirm, setShowLeaderboardsConfirm] = useState(false);
+  const [showProfileConfirm, setShowProfileConfirm] = useState(false);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const updateIntervalRef = useRef<number | null>(null);
   const currentSessionRef = useRef<GameSessionData | null>(null);
@@ -249,9 +251,35 @@ export const GameContainer: React.FC<GameContainerProps> = ({
     }
   };
 
+  const handleViewLeaderboardsClick = () => {
+    if (currentSession && (isPausedState || gameState === 'playing')) {
+      setShowLeaderboardsConfirm(true);
+    } else {
+      navigate('/leaderboards');
+    }
+  };
+
+  const handleViewProfileClick = () => {
+    if (currentSession && (isPausedState || gameState === 'playing')) {
+      setShowProfileConfirm(true);
+    } else {
+      navigate('/profile');
+    }
+  };
+
   const handleViewRecentGamesConfirm = () => {
     setShowRecentGamesConfirm(false);
     navigate('/recent-games');
+  };
+
+  const handleViewLeaderboardsConfirm = () => {
+    setShowLeaderboardsConfirm(false);
+    navigate('/leaderboards');
+  };
+
+  const handleViewProfileConfirm = () => {
+    setShowProfileConfirm(false);
+    navigate('/profile');
   };
 
   return (
@@ -286,6 +314,30 @@ export const GameContainer: React.FC<GameContainerProps> = ({
           confirmVariant='primary'
           onConfirm={handleViewRecentGamesConfirm}
           onCancel={() => setShowRecentGamesConfirm(false)}
+        />
+      )}
+
+      {showLeaderboardsConfirm && (
+        <ConfirmationModal
+          title='View Leaderboards?'
+          message='Leaving will abandon your current session.'
+          confirmText='Continue'
+          cancelText='Stay'
+          confirmVariant='primary'
+          onConfirm={handleViewLeaderboardsConfirm}
+          onCancel={() => setShowLeaderboardsConfirm(false)}
+        />
+      )}
+
+      {showProfileConfirm && (
+        <ConfirmationModal
+          title='View Profile?'
+          message='Leaving will abandon your current session.'
+          confirmText='Continue'
+          cancelText='Stay'
+          confirmVariant='primary'
+          onConfirm={handleViewProfileConfirm}
+          onCancel={() => setShowProfileConfirm(false)}
         />
       )}
 
@@ -338,6 +390,8 @@ export const GameContainer: React.FC<GameContainerProps> = ({
                 userStats={userStats}
                 onLogout={onLogout}
                 onViewRecentGames={handleViewRecentGamesClick}
+                onViewLeaderboards={handleViewLeaderboardsClick}
+                onViewProfile={handleViewProfileClick}
               />
             </div>
           )}
