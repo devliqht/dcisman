@@ -19,33 +19,37 @@ public class LeaderboardController {
 
     @GetMapping
     public ResponseEntity<List<LeaderboardResponse>> getAllLeaderboards(
-            @RequestParam(defaultValue = "10") int limit) {
-        log.info("Fetching all leaderboards with limit: {}", limit);
-        List<LeaderboardResponse> leaderboards = leaderboardService.getAllLeaderboards(limit);
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        log.info("Fetching all leaderboards - page: {}, pageSize: {}", page, pageSize);
+        List<LeaderboardResponse> leaderboards = leaderboardService.getAllLeaderboards(page, pageSize);
         return ResponseEntity.ok(leaderboards);
     }
 
     @GetMapping("/high-score")
     public ResponseEntity<LeaderboardResponse> getHighScoreLeaderboard(
-            @RequestParam(defaultValue = "10") int limit) {
-        log.info("Fetching high score leaderboard with limit: {}", limit);
-        LeaderboardResponse leaderboard = leaderboardService.getHighScoreLeaderboard(limit);
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        log.info("Fetching high score leaderboard - page: {}, pageSize: {}", page, pageSize);
+        LeaderboardResponse leaderboard = leaderboardService.getHighScoreLeaderboard(page, pageSize);
         return ResponseEntity.ok(leaderboard);
     }
 
     @GetMapping("/highest-level")
     public ResponseEntity<LeaderboardResponse> getHighestLevelLeaderboard(
-            @RequestParam(defaultValue = "10") int limit) {
-        log.info("Fetching highest level leaderboard with limit: {}", limit);
-        LeaderboardResponse leaderboard = leaderboardService.getHighestLevelLeaderboard(limit);
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        log.info("Fetching highest level leaderboard - page: {}, pageSize: {}", page, pageSize);
+        LeaderboardResponse leaderboard = leaderboardService.getHighestLevelLeaderboard(page, pageSize);
         return ResponseEntity.ok(leaderboard);
     }
 
     @GetMapping("/total-ghosts")
     public ResponseEntity<LeaderboardResponse> getTotalGhostsLeaderboard(
-            @RequestParam(defaultValue = "10") int limit) {
-        log.info("Fetching total ghosts leaderboard with limit: {}", limit);
-        LeaderboardResponse leaderboard = leaderboardService.getTotalGhostsLeaderboard(limit);
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        log.info("Fetching total ghosts leaderboard - page: {}, pageSize: {}", page, pageSize);
+        LeaderboardResponse leaderboard = leaderboardService.getTotalGhostsLeaderboard(page, pageSize);
         return ResponseEntity.ok(leaderboard);
     }
 }

@@ -23,8 +23,11 @@ public class LeaderboardService {
     private final UserStatsRepository userStatsRepository;
 
     @Transactional(readOnly = true)
-    public LeaderboardResponse getHighScoreLeaderboard(int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
+    public LeaderboardResponse getHighScoreLeaderboard(int page, int pageSize) {
+        long totalPlayers = userStatsRepository.count();
+        int totalPages = (int) Math.ceil((double) totalPlayers / pageSize);
+
+        Pageable pageable = PageRequest.of(page, pageSize);
         List<UserStats> topStats = userStatsRepository.findTopByHighestScore(pageable);
 
         List<LeaderboardEntry> entries = topStats.stream()
@@ -32,24 +35,27 @@ public class LeaderboardService {
                     .userId(stats.getUser().getId())
                     .username(stats.getUser().getUsername())
                     .value(stats.getHighestScore())
-                    .rank(topStats.indexOf(stats) + 1)
+                    .rank((page * pageSize) + topStats.indexOf(stats) + 1)
                     .build())
             .collect(Collectors.toList());
-
-        long totalPlayers = userStatsRepository.count();
 
         return LeaderboardResponse.builder()
             .category("HIGH_SCORE")
             .entries(entries)
             .lastUpdated(LocalDateTime.now())
             .totalPlayers((int) totalPlayers)
+            .currentPage(page)
+            .totalPages(totalPages)
+            .pageSize(pageSize)
             .build();
     }
 
-
     @Transactional(readOnly = true)
-    public LeaderboardResponse getHighestLevelLeaderboard(int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
+    public LeaderboardResponse getHighestLevelLeaderboard(int page, int pageSize) {
+        long totalPlayers = userStatsRepository.count();
+        int totalPages = (int) Math.ceil((double) totalPlayers / pageSize);
+
+        Pageable pageable = PageRequest.of(page, pageSize);
         List<UserStats> topStats = userStatsRepository.findTopByHighestLevel(pageable);
 
         List<LeaderboardEntry> entries = topStats.stream()
@@ -57,23 +63,27 @@ public class LeaderboardService {
                     .userId(stats.getUser().getId())
                     .username(stats.getUser().getUsername())
                     .value(stats.getHighestLevelReached())
-                    .rank(topStats.indexOf(stats) + 1)
+                    .rank((page * pageSize) + topStats.indexOf(stats) + 1)
                     .build())
             .collect(Collectors.toList());
-
-        long totalPlayers = userStatsRepository.count();
 
         return LeaderboardResponse.builder()
                 .category("HIGHEST_LEVEL")
                 .entries(entries)
                 .lastUpdated(LocalDateTime.now())
                 .totalPlayers((int) totalPlayers)
+                .currentPage(page)
+                .totalPages(totalPages)
+                .pageSize(pageSize)
                 .build();
     }
 
     @Transactional(readOnly = true)
-    public LeaderboardResponse getTotalGhostsLeaderboard(int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
+    public LeaderboardResponse getTotalGhostsLeaderboard(int page, int pageSize) {
+        long totalPlayers = userStatsRepository.count();
+        int totalPages = (int) Math.ceil((double) totalPlayers / pageSize);
+
+        Pageable pageable = PageRequest.of(page, pageSize);
         List<UserStats> topStats = userStatsRepository.findTopByTotalGhostsEaten(pageable);
 
         List<LeaderboardEntry> entries = topStats.stream()
@@ -81,26 +91,27 @@ public class LeaderboardService {
                     .userId(stats.getUser().getId())
                     .username(stats.getUser().getUsername())
                     .value(stats.getTotalGhostsEaten())
-                    .rank(topStats.indexOf(stats) + 1)
+                    .rank((page * pageSize) + topStats.indexOf(stats) + 1)
                     .build())
             .collect(Collectors.toList());
-
-        long totalPlayers = userStatsRepository.count();
 
         return LeaderboardResponse.builder()
                 .category("TOTAL_GHOSTS")
                 .entries(entries)
                 .lastUpdated(LocalDateTime.now())
                 .totalPlayers((int) totalPlayers)
+                .currentPage(page)
+                .totalPages(totalPages)
+                .pageSize(pageSize)
                 .build();
     }
 
     @Transactional(readOnly = true)
-    public List<LeaderboardResponse> getAllLeaderboards(int limit) {
+    public List<LeaderboardResponse> getAllLeaderboards(int page, int pageSize) {
         return List.of(
-            getHighScoreLeaderboard(limit),
-            getHighestLevelLeaderboard(limit),
-            getTotalGhostsLeaderboard(limit)
+            getHighScoreLeaderboard(page, pageSize),
+            getHighestLevelLeaderboard(page, pageSize),
+            getTotalGhostsLeaderboard(page, pageSize)
         );
     }
 }

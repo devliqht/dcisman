@@ -18,4 +18,7 @@ public class LeaderboardResponse {
     private List<LeaderboardEntry> entries;
     private LocalDateTime lastUpdated;
     private Integer totalPlayers;
+    private Integer currentPage;
+    private Integer totalPages;
+    private Integer pageSize;
 }
