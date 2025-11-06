@@ -1,5 +1,5 @@
-import { Maze } from '@/game/Maze';
-import type { Direction } from '@/game/InputManager';
+import { Maze } from '@/engine/Maze';
+import type { Direction } from '@/engine/InputManager';
 
 export class Pacman {
   public x: number;

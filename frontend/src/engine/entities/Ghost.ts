@@ -1,6 +1,6 @@
-import { Maze } from '@/game/Maze';
-import { Pacman } from '@/game/entities/Pacman';
-import type { Direction } from '@/game/InputManager';
+import { Maze } from '@/engine/Maze';
+import { Pacman } from '@/engine/entities/Pacman';
+import type { Direction } from '@/engine/InputManager';
 
 type GhostMode = 'chase' | 'scatter' | 'frightened' | 'dead';
 type GhostName = 'blinky' | 'pinky' | 'inky' | 'clyde';
