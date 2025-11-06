@@ -1,7 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui';
-import { InfoCard } from './InfoCard';
+import { InfoCard } from '@/components/common/InfoCard';
 import { UserIcon, StatsIcon, GamesIcon, TrophyIcon } from './icons';
 import { type UserStats } from '@/services/statsService';
 
@@ -10,6 +9,8 @@ interface UserInfoCardsProps {
   userStats: UserStats | null;
   onLogout: () => void;
   onViewRecentGames: () => void;
+  onViewLeaderboards: () => void;
+  onViewProfile: () => void;
 }
 
 export const UserInfoCards: React.FC<UserInfoCardsProps> = ({
@@ -17,8 +18,9 @@ export const UserInfoCards: React.FC<UserInfoCardsProps> = ({
   userStats,
   onLogout,
   onViewRecentGames,
+  onViewLeaderboards,
+  onViewProfile,
 }) => {
-  const navigate = useNavigate();
 
   return (
     <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mt-8'>
@@ -44,7 +46,7 @@ export const UserInfoCards: React.FC<UserInfoCardsProps> = ({
               </p>
             </div>
             <Button
-              onClick={() => navigate('/profile')}
+              onClick={onViewProfile}
               variant='secondary'
               className='w-full font-family-vt323 text-2xl! p-2!'
             >
@@ -70,7 +72,7 @@ export const UserInfoCards: React.FC<UserInfoCardsProps> = ({
 
       <InfoCard icon={<TrophyIcon />} title='Leaderboards'>
         <Button
-          onClick={() => navigate('/leaderboards')}
+          onClick={onViewLeaderboards}
           variant='secondary'
           className='w-full font-family-vt323 text-2xl! p-2!'
         >

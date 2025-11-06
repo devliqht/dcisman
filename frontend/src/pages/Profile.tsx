@@ -26,6 +26,18 @@ export const Profile: React.FC = () => {
     fetchStats();
   }, []);
 
+  // ESC key to go back
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        navigate('/');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
+
   const calculateCompletionRate = () => {
     if (!stats || stats.totalGamesPlayed === 0) return 0;
     return ((stats.totalGamesCompleted / stats.totalGamesPlayed) * 100).toFixed(1);

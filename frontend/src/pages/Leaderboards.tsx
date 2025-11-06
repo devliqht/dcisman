@@ -1,93 +1,94 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button } from '@/components/ui';
+import { Card } from '@/components/ui';
 import {
   TrophyIcon,
   TargetIcon,
   GhostEatenIcon,
-  MedalIcon,
+  BackIcon,
 } from '@/components/game/icons';
 import {
-  createLeaderboardPoller,
+  getAllLeaderboards,
   type LeaderboardResponse,
-  type LeaderboardEntry,
 } from '@/services/leaderboardService';
+import { useAuth } from '@/hooks/useAuth';
+import { getTabConfig } from '@/utils/leaderboards.tsx';
+import { LeaderboardTable } from '@/components/game/LeaderboardTable';
+import { PaginationControls } from '@/components/common/PaginationControls';
 
 type TabType = 'HIGH_SCORE' | 'HIGHEST_LEVEL' | 'TOTAL_GHOSTS';
 
 export const Leaderboards: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [leaderboards, setLeaderboards] = useState<LeaderboardResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('HIGH_SCORE');
+  const [currentPage, setCurrentPage] = useState(0);
+  const pageSize = 10;
+
+  const fetchLeaderboards = useCallback(async () => {
+    try {
+      const data = await getAllLeaderboards(currentPage, pageSize);
+      setLeaderboards(data);
+      setLastUpdated(new Date());
+      setLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch leaderboards:', error);
+      setLoading(false);
+    }
+  }, [currentPage]);
 
   useEffect(() => {
-    const cleanup = createLeaderboardPoller(
-      data => {
-        setLeaderboards(data);
-        setLastUpdated(new Date());
-        setLoading(false);
-      },
-      10,
-      60000 
-    );
+    fetchLeaderboards();
 
-    return cleanup;
-  }, []);
+    const intervalId = window.setInterval(fetchLeaderboards, 60000);
 
-  const getTabConfig = (tab: TabType) => {
+    return () => clearInterval(intervalId);
+  }, [fetchLeaderboards]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        navigate('/');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    setCurrentPage(0);
+  };
+
+  const handleNextPage = () => {
+    const activeLeaderboard = leaderboards.find(lb => lb.category === activeTab);
+    if (activeLeaderboard && currentPage < activeLeaderboard.totalPages - 1) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
+
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const getTabIcon = (tab: TabType): React.ReactNode => {
     switch (tab) {
       case 'HIGH_SCORE':
-        return {
-          title: 'Highest Scores',
-          icon: <TrophyIcon />,
-          color: 'text-pacman-yellow',
-          borderColor: 'border-pacman-yellow',
-          bgColor: 'bg-pacman-yellow/10',
-        };
+        return <TrophyIcon />;
       case 'HIGHEST_LEVEL':
-        return {
-          title: 'Highest Levels',
-          icon: <TargetIcon />,
-          color: 'text-ghost-cyan',
-          borderColor: 'border-ghost-cyan',
-          bgColor: 'bg-ghost-cyan/10',
-        };
+        return <TargetIcon />;
       case 'TOTAL_GHOSTS':
-        return {
-          title: 'Most Ghosts Eaten',
-          icon: <GhostEatenIcon />,
-          color: 'text-ghost-red',
-          borderColor: 'border-ghost-red',
-          bgColor: 'bg-ghost-red/10',
-        };
-    }
-  };
-
-  const getRankColor = (rank: number): string => {
-    switch (rank) {
-      case 1:
-        return 'text-yellow-400';
-      case 2:
-        return 'text-gray-300';
-      case 3:
-        return 'text-orange-400';
-      default:
-        return 'text-white';
-    }
-  };
-
-  const getRankIcon = (rank: number): React.ReactNode => {
-    switch (rank) {
-      case 1:
-        return <MedalIcon variant='gold' />;
-      case 2:
-        return <MedalIcon variant='silver' />;
-      case 3:
-        return <MedalIcon variant='bronze' />;
-      default:
-        return `${rank}.`;
+        return <GhostEatenIcon />;
     }
   };
 
@@ -95,9 +96,9 @@ export const Leaderboards: React.FC = () => {
   const activeConfig = getTabConfig(activeTab);
 
   return (
-    <div className='min-h-screen bg-pacman-dark flex flex-col items-center justify-center p-6'>
+    <div className='min-h-screen bg-pacman-dark flex flex-col items-center pt-6 p-6'>
       <Card className='w-full max-w-4xl bg-maze-wall/90'>
-        <div className='flex justify-between items-center mb-6'>
+        <div className='flex justify-between items-start mb-6'>
           <div>
             <h1 className='text-4xl font-family-arcade text-pacman-yellow mb-2'>
               Leaderboards
@@ -108,13 +109,24 @@ export const Leaderboards: React.FC = () => {
               </p>
             )}
           </div>
-          <Button
-            onClick={() => navigate('/')}
-            variant='secondary'
-            className='font-family-vt323 text-2xl!'
-          >
-            Back to Game
-          </Button>
+          <div className='flex items-center gap-4'>
+            {!loading && activeLeaderboard && (
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={activeLeaderboard.totalPages}
+                onPrevious={handlePreviousPage}
+                onNext={handleNextPage}
+                onPageClick={handlePageClick}
+              />
+            )}
+            <button
+              onClick={() => navigate('/')}
+              className='border-2 border-pacman-yellow text-pacman-yellow hover:bg-pacman-yellow hover:text-pacman-dark font-family-arcade w-12 h-12 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center'
+              title='Back to Game'
+            >
+              <BackIcon />
+            </button>
+          </div>
         </div>
 
         {loading && (
@@ -144,15 +156,15 @@ export const Leaderboards: React.FC = () => {
                 return (
                   <button
                     key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`flex-1 p-0 rounded-lg font-family-vt323 text-xl transition-all duration-200 flex items-center justify-center gap-2 ${
+                    onClick={() => handleTabChange(tab)}
+                    className={`flex-1 p-0 rounded-lg font-family-vt323 text-xl transition-all duration-200 flex items-center justify-center hover:cursor-pointer gap-2 ${
                       isActive
                         ? `${config.color} ${config.bgColor} border-2 ${config.borderColor}`
                         : 'text-gray-400 hover:text-white hover:bg-maze-wall/30 border-2 border-transparent'
                     }`}
                   >
                     <span className='inline-flex items-center'>
-                      {config.icon}
+                      {getTabIcon(tab)}
                     </span>
                     {config.title}
                   </button>
@@ -160,112 +172,16 @@ export const Leaderboards: React.FC = () => {
               })}
             </div>
 
-            {/* Leaderboard Table */}
             {activeLeaderboard && (
               <LeaderboardTable
                 entries={activeLeaderboard.entries}
-                totalPlayers={activeLeaderboard.totalPlayers}
                 color={activeConfig.color}
-                getRankColor={getRankColor}
-                getRankIcon={getRankIcon}
+                currentUserId={user?.id}
               />
             )}
           </>
         )}
       </Card>
-    </div>
-  );
-};
-
-interface LeaderboardTableProps {
-  entries: LeaderboardEntry[];
-  totalPlayers: number;
-  color: string;
-  getRankColor: (rank: number) => string;
-  getRankIcon: (rank: number) => React.ReactNode;
-}
-
-const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
-  entries,
-  totalPlayers,
-  color,
-  getRankColor,
-  getRankIcon,
-}) => {
-  return (
-    <div className='bg-pacman-dark/50 border-2 border-maze-blue rounded-lg overflow-hidden'>
-      {entries.length === 0 ? (
-        <div className='p-12 text-center'>
-          <p className='text-gray-400 font-family-vt323 text-2xl'>
-            No entries yet. Be the first to play!
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className='bg-maze-wall/50 border-b-2 border-maze-blue'>
-            <div className='grid grid-cols-12 gap-4 px-6 py-4'>
-              <div className='col-span-2 text-center'>
-                <span className='text-gray-300 font-family-arcade text-lg'>
-                  Rank
-                </span>
-              </div>
-              <div className='col-span-6'>
-                <span className='text-gray-300 font-family-arcade text-lg'>
-                  Player
-                </span>
-              </div>
-              <div className='col-span-4 text-right'>
-                <span className={`${color} font-family-arcade text-lg`}>
-                  Score
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className='divide-y divide-maze-blue/30'>
-            {entries.map((entry, index) => (
-              <div
-                key={entry.userId}
-                className={`grid grid-cols-12 gap-4 px-6 py-4 hover:bg-maze-wall/30 transition-colors ${
-                  index < 3 ? 'bg-maze-wall/20' : ''
-                }`}
-              >
-                <div className='col-span-2 flex items-center justify-center'>
-                  {typeof getRankIcon(entry.rank) === 'string' ? (
-                    <span
-                      className={`font-family-arcade text-2xl ${getRankColor(
-                        entry.rank
-                      )}`}
-                    >
-                      {getRankIcon(entry.rank)}
-                    </span>
-                  ) : (
-                    <span className={getRankColor(entry.rank)}>
-                      {getRankIcon(entry.rank)}
-                    </span>
-                  )}
-                </div>
-                <div className='col-span-6 flex items-center'>
-                  <span className='text-white font-family-vt323 text-2xl truncate'>
-                    {entry.username}
-                  </span>
-                </div>
-                <div className='col-span-4 flex items-center justify-end'>
-                  <span className={`${color} font-family-arcade text-2xl`}>
-                    {entry.value.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className='bg-maze-wall/50 border-t-2 border-maze-blue px-6 py-4'>
-            <p className='text-gray-400 font-family-vt323 text-xl text-center'>
-              Total Players: <span className='text-white'>{totalPlayers}</span>
-            </p>
-          </div>
-        </>
-      )}
     </div>
   );
 };

@@ -6,3 +6,4 @@ export { TrophyIcon } from './TrophyIcon';
 export { TargetIcon } from './TargetIcon';
 export { GhostEatenIcon } from './GhostEatenIcon';
 export { MedalIcon } from './MedalIcon';
+export { BackIcon } from './BackIcon';

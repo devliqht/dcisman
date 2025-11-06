@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button } from '@/components/ui';
 import {
@@ -6,6 +6,11 @@ import {
   type GameSessionData,
 } from '@/services/gameSessionService';
 import { useAuth } from '@/hooks/useAuth';
+import { BackIcon } from '@/components/game/icons';
+import { GameSessionCard } from '@/components/game/GameSessionCard';
+import { PaginationControls } from '@/components/common/PaginationControls';
+
+type TabType = 'ALL' | 'COMPLETED' | 'ABANDONED';
 
 export const RecentGames: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +18,9 @@ export const RecentGames: React.FC = () => {
   const [sessions, setSessions] = useState<GameSessionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabType>('ALL');
+  const [currentPage, setCurrentPage] = useState(0);
+  const pageSize = 5;
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -35,188 +43,153 @@ export const RecentGames: React.FC = () => {
     fetchSessions();
   }, []);
 
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        navigate('/');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
+
+  const filteredSessions = useMemo(() => {
+    if (activeTab === 'ALL') return sessions;
+    return sessions.filter((session) => session.status === activeTab);
+  }, [sessions, activeTab]);
+
+  const paginatedSessions = useMemo(() => {
+    const startIndex = currentPage * pageSize;
+    return filteredSessions.slice(startIndex, startIndex + pageSize);
+  }, [filteredSessions, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(filteredSessions.length / pageSize);
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    setCurrentPage(0);
   };
 
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-  const getStatusColor = (status: string): string => {
-    switch (status) {
-      case 'COMPLETED':
-        return 'bg-green-500/20 text-green-400 border-green-500';
-      case 'ABANDONED':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500';
-      case 'IN_PROGRESS':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500';
-      default:
-        return 'bg-gray-500/20 text-gray-400 border-gray-500';
+  const handleNextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setCurrentPage((prev) => prev + 1);
     }
   };
 
+  const handlePreviousPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return (
-    <div className='min-h-screen bg-pacman-dark flex flex-col items-center justify-center p-4'>
-      <div className='w-full max-w-5xl'>
-        <div className='text-center mb-8'>
-          <h1 className='text-pacman-yellow font-family-arcade text-5xl drop-shadow-lg mb-4'>
-            Recent Games
-          </h1>
-          <p className='text-gray-400 font-family-vt323 text-2xl mb-6'>
-            {user?.username}'s Game History
-          </p>
-          <Button
-            onClick={() => navigate('/')}
-            className='bg-ghost-cyan hover:bg-cyan-400 text-pacman-dark font-family-arcade text-xl px-8 py-3'
-          >
-            Back to Game
-          </Button>
+    <div className='min-h-screen bg-pacman-dark flex flex-col items-center pt-6 p-6'>
+      <Card className='w-full max-w-5xl bg-maze-wall/90'>
+        <div className='flex justify-between items-start mb-6'>
+          <div>
+            <h1 className='text-4xl font-family-arcade text-pacman-yellow mb-2'>
+              Recent Games
+            </h1>
+            <p className='text-gray-400 font-family-vt323 text-lg'>
+              {user?.username}'s Game History
+            </p>
+          </div>
+          <div className='flex items-center gap-4'>
+            {!loading && filteredSessions.length > 0 && (
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPrevious={handlePreviousPage}
+                onNext={handleNextPage}
+                onPageClick={handlePageClick}
+              />
+            )}
+            <button
+              onClick={() => navigate('/')}
+              className='border-2 border-pacman-yellow text-pacman-yellow hover:bg-pacman-yellow hover:text-pacman-dark font-family-arcade w-12 h-12 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center'
+              title='Back to Game'
+            >
+              <BackIcon />
+            </button>
+          </div>
         </div>
 
-        <Card className='bg-maze-wall/90 border-4 border-maze-blue p-6'>
-          {loading && (
-            <div className='text-center py-12'>
-              <p className='text-white font-family-vt323 text-2xl'>
-                Loading game history...
-              </p>
+        {loading && (
+          <div className='text-center py-12'>
+            <p className='text-white font-family-vt323 text-2xl'>
+              Loading game history...
+            </p>
+          </div>
+        )}
+
+        {error && (
+          <div className='text-center py-12'>
+            <p className='text-ghost-red font-family-vt323 text-2xl mb-4'>
+              {error}
+            </p>
+            <Button
+              onClick={() => window.location.reload()}
+              variant='secondary'
+              className='font-family-vt323 text-xl'
+            >
+              Retry
+            </Button>
+          </div>
+        )}
+
+        {!loading && !error && sessions.length === 0 && (
+          <div className='text-center py-12'>
+            <p className='text-gray-400 font-family-vt323 text-2xl mb-4'>
+              No games played yet
+            </p>
+            <p className='text-gray-500 font-family-vt323 text-lg'>
+              Start playing to see your game history!
+            </p>
+          </div>
+        )}
+
+        {!loading && !error && sessions.length > 0 && (
+          <>
+            <div className='flex gap-2 mb-4 pb-2'>
+              {(['ALL', 'COMPLETED', 'ABANDONED'] as TabType[]).map((tab) => {
+                const isActive = activeTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => handleTabChange(tab)}
+                    className={`flex-1 p-3 rounded-lg font-family-vt323 text-xl transition-all duration-200 ${
+                      isActive
+                        ? 'bg-pacman-yellow text-black border-2 border-pacman-yellow'
+                        : 'text-gray-400 hover:text-white hover:bg-maze-wall/30 border-2 border-transparent'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                );
+              })}
             </div>
-          )}
 
-          {error && (
-            <div className='text-center py-12'>
-              <p className='text-ghost-red font-family-vt323 text-2xl mb-4'>
-                {error}
-              </p>
-              <Button
-                onClick={() => window.location.reload()}
-                variant='secondary'
-                className='font-family-vt323 text-xl'
-              >
-                Retry
-              </Button>
-            </div>
-          )}
-
-          {!loading && !error && sessions.length === 0 && (
-            <div className='text-center py-12'>
-              <p className='text-gray-400 font-family-vt323 text-2xl mb-4'>
-                No games played yet
-              </p>
-              <p className='text-gray-500 font-family-vt323 text-lg'>
-                Start playing to see your game history!
-              </p>
-            </div>
-          )}
-
-          {!loading && !error && sessions.length > 0 && (
-            <div className='space-y-4'>
-              {sessions.map(session => (
-                <GameSessionCard
-                  key={session.id}
-                  session={session}
-                  formatTime={formatTime}
-                  formatDate={formatDate}
-                  getStatusColor={getStatusColor}
-                />
-              ))}
-            </div>
-          )}
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-interface GameSessionCardProps {
-  session: GameSessionData;
-  formatTime: (seconds: number) => string;
-  formatDate: (dateString: string) => string;
-  getStatusColor: (status: string) => string;
-}
-
-const GameSessionCard: React.FC<GameSessionCardProps> = ({
-  session,
-  formatTime,
-  formatDate,
-  getStatusColor,
-}) => {
-  return (
-    <div className='bg-pacman-dark rounded-lg p-4 border-2 border-maze-blue hover:border-pacman-yellow transition-all duration-200'>
-      <div className='flex items-center justify-between mb-3'>
-        <div className='flex items-center gap-3'>
-          <span className='text-gray-500 font-family-vt323 text-4xl'>
-            #{session.id}
-          </span>
-          <span className='text-gray-400 font-family-vt323 text-xl'>
-            {formatDate(session.startedAt)}
-          </span>
-        </div>
-        <span
-          className={`px-3 py-1 rounded-full border font-family-vt323 text-sm uppercase ${getStatusColor(
-            session.status
-          )}`}
-        >
-          {session.status}
-        </span>
-      </div>
-
-      <div className='grid grid-cols-2 md:grid-cols-5 gap-4'>
-        <StatBox
-          label='Score'
-          value={session.score.toLocaleString()}
-          color='text-pacman-yellow'
-        />
-        <StatBox
-          label='Level'
-          value={session.levelReached.toString()}
-          color='text-ghost-cyan'
-        />
-        <StatBox
-          label='Time'
-          value={formatTime(session.durationSeconds)}
-          color='text-ghost-pink'
-        />
-        <StatBox
-          label='Ghosts'
-          value={session.ghostsEaten.toString()}
-          color='text-ghost-orange'
-        />
-        <StatBox
-          label='Power-ups'
-          value={session.powerUpsUsed.toString()}
-          color='text-white'
-        />
-      </div>
-    </div>
-  );
-};
-
-interface StatBoxProps {
-  label: string;
-  value: string;
-  color?: string;
-}
-
-const StatBox: React.FC<StatBoxProps> = ({
-  label,
-  value,
-  color = 'text-white',
-}) => {
-  return (
-    <div className='text-center'>
-      <p className='text-gray-500 font-family-vt323 text-xl uppercase mb-1'>
-        {label}
-      </p>
-      <p className={`font-family-arcade text-xl ${color}`}>{value}</p>
+            {filteredSessions.length === 0 ? (
+              <div className='text-center py-12'>
+                <p className='text-gray-400 font-family-vt323 text-2xl'>
+                  No {activeTab.toLowerCase()} games found
+                </p>
+              </div>
+            ) : (
+              <div className='space-y-4'>
+                {paginatedSessions.map((session) => (
+                  <GameSessionCard key={session.id} session={session} />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </Card>
     </div>
   );
 };
