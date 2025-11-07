@@ -7,3 +7,8 @@ export { TargetIcon } from './TargetIcon';
 export { GhostEatenIcon } from './GhostEatenIcon';
 export { MedalIcon } from './MedalIcon';
 export { BackIcon } from './BackIcon';
+export { LogoutIcon } from './LogoutIcon';
+export { LeftArrowIcon } from './LeftArrowIcon';
+export { RightArrowIcon } from './RightArrowIcon';
+export { HomeIcon } from './HomeIcon';
+export { ClockIcon } from './ClockIcon';

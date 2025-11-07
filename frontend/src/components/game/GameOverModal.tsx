@@ -1,18 +1,23 @@
 import React from 'react';
 import { Card, Button } from '@/components/ui';
+import { HomeIcon, ClockIcon, TrophyIcon } from './icons';
 import type { GameSessionData } from '@/services/gameSessionService';
 
 interface GameOverModalProps {
   session: GameSessionData | null;
   onPlayAgain: () => void;
+  onHome: () => void;
   onViewRecentGames: () => void;
+  onViewLeaderboards: () => void;
   onLogout: () => void;
 }
 
 export const GameOverModal: React.FC<GameOverModalProps> = ({
   session,
   onPlayAgain,
+  onHome,
   onViewRecentGames,
+  onViewLeaderboards,
 }) => {
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -74,21 +79,37 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
         )}
 
         {/* action buttons */}
-        <div className='space-y-3'>
+        <div className='space-y-4'>
           <Button
             onClick={onPlayAgain}
-            className='w-full bg-pacman-yellow hover:bg-yellow-400 text-pacman-dark font-family-arcade text-2xl py-3 transition-all duration-200 hover:scale-105'
+            className='w-full bg-pacman-yellow hover:bg-yellow-400 text-black font-family-arcade text-2xl py-3 transition-all duration-200 hover:scale-105'
           >
             Play Again
           </Button>
 
-          <Button
-            onClick={onViewRecentGames}
-            variant='secondary'
-            className='w-full bg-ghost-cyan hover:bg-cyan-400 text-pacman-dark font-family-arcade text-2xl py-3 transition-all duration-200'
-          >
-            View Recent Games
-          </Button>
+          <div className='flex gap-3 justify-center'>
+            <button
+              onClick={onHome}
+              className='border-2 border-pacman-yellow text-pacman-yellow hover:bg-pacman-yellow hover:text-pacman-dark font-family-arcade w-14 h-14 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center [&:hover_svg]:text-black'
+              title='Home'
+            >
+              <HomeIcon />
+            </button>
+            <button
+              onClick={onViewRecentGames}
+              className='border-2 border-pacman-yellow text-pacman-yellow hover:bg-pacman-yellow hover:text-black font-family-arcade w-14 h-14 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center [&:hover_svg]:text-black'
+              title='Recent Games'
+            >
+              <ClockIcon />
+            </button>
+            <button
+              onClick={onViewLeaderboards}
+              className='border-2 border-pacman-yellow text-pacman-yellow hover:bg-pacman-yellow hover:text-black font-family-arcade w-14 h-14 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center [&:hover_svg]:text-black'
+              title='Leaderboards'
+            >
+              <TrophyIcon />
+            </button>
+          </div>
         </div>
       </Card>
     </div>

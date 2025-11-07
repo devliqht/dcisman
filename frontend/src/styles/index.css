@@ -152,6 +152,10 @@ h6 {
   animation: pulse 1s infinite;
 }
 
+button:hover {
+	cursor: pointer;
+}
+
 @keyframes pulse {
   0%,
   100% {

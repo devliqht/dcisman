@@ -141,7 +141,7 @@ export class Maze {
     return this.tiles[y][x].type === 'wall';
   }
 
-  // pixelated pellet (3x3 grid)
+  // pixelated pellet (5x5 grid)
   private renderPellet(
     ctx: CanvasRenderingContext2D,
     centerX: number,
@@ -149,19 +149,21 @@ export class Maze {
   ): void {
     const pixelSize = 2;
     const pixels = [
-      [0, 1, 0],
-      [1, 1, 1],
-      [0, 1, 0],
+      [0, 1, 1, 1, 0],
+      [1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1],
+      [0, 1, 1, 1, 0],
     ];
 
     ctx.fillStyle = '#FFFFFF';
     ctx.beginPath();
-    for (let y = 0; y < 3; y++) {
-      for (let x = 0; x < 3; x++) {
+    for (let y = 0; y < 5; y++) {
+      for (let x = 0; x < 5; x++) {
         if (pixels[y][x] === 1) {
           ctx.rect(
-            centerX - 3 + x * pixelSize,
-            centerY - 3 + y * pixelSize,
+            centerX - 5 + x * pixelSize,
+            centerY - 5 + y * pixelSize,
             pixelSize,
             pixelSize
           );
@@ -171,7 +173,7 @@ export class Maze {
     ctx.fill();
   }
 
-  // pixelated power pellet (7x7 grid)
+  // pixelated power pellet (9x9 grid)
   private renderPowerPellet(
     ctx: CanvasRenderingContext2D,
     centerX: number,
@@ -179,23 +181,25 @@ export class Maze {
   ): void {
     const pixelSize = 2;
     const pixels = [
-      [0, 0, 1, 1, 1, 0, 0],
-      [0, 1, 1, 1, 1, 1, 0],
-      [1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1],
-      [0, 1, 1, 1, 1, 1, 0],
-      [0, 0, 1, 1, 1, 0, 0],
+      [0, 0, 1, 1, 1, 1, 1, 0, 0],
+      [0, 1, 1, 1, 1, 1, 1, 1, 0],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [0, 1, 1, 1, 1, 1, 1, 1, 0],
+      [0, 0, 1, 1, 1, 1, 1, 0, 0],
     ];
 
     ctx.fillStyle = '#FFF380';
     ctx.beginPath();
-    for (let y = 0; y < 7; y++) {
-      for (let x = 0; x < 7; x++) {
+    for (let y = 0; y < 9; y++) {
+      for (let x = 0; x < 9; x++) {
         if (pixels[y][x] === 1) {
           ctx.rect(
-            centerX - 7 + x * pixelSize,
-            centerY - 7 + y * pixelSize,
+            centerX - 9 + x * pixelSize,
+            centerY - 9 + y * pixelSize,
             pixelSize,
             pixelSize
           );

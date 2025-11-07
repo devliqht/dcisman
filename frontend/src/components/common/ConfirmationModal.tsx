@@ -21,8 +21,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onCancel,
 }) => {
   return (
-    <div className='absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50'>
-      <Card className='bg-pacman-dark border-4 border-ghost-red p-6 max-w-md w-full mx-4'>
+    <div className='absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50'>
+      <Card className='bg-black border-4 border-ghost-red p-6 max-w-md w-full mx-4'>
         <div className='text-center mb-4'>
           <h2 className='text-ghost-red font-family-arcade text-3xl drop-shadow-lg mb-2'>
             {title}

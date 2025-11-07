@@ -7,7 +7,8 @@ import { ConfirmationModal } from '@/components/common/ConfirmationModal';
 import { InGameStats } from './InGameStats';
 import { StartGameMenu } from './StartGameMenu';
 import { PauseMenu } from './PauseMenu';
-import { UserInfoCards } from './UserInfoCards';
+import { UserCard } from './UserCard';
+import { NavigationButtons } from './NavigationButtons';
 import { PauseIcon } from './icons';
 import {
   startGameSession,
@@ -243,6 +244,13 @@ export const GameContainer: React.FC<GameContainerProps> = ({
     handleStart();
   };
 
+  const handleHome = () => {
+    setShowGameOver(false);
+    setCompletedSession(null);
+    engineRef.current?.reset();
+    onStateChange('idle');
+  };
+
   const handleViewRecentGamesClick = () => {
     if (currentSession && (isPausedState || gameState === 'playing')) {
       setShowRecentGamesConfirm(true);
@@ -283,12 +291,14 @@ export const GameContainer: React.FC<GameContainerProps> = ({
   };
 
   return (
-    <Card className='py-0 p-6 bg-maze-wall/90'>
+    <Card className='p-0! bg-maze-wall/90 max-h-[calc(100vh-2rem)] overflow-hidden'>
       {showGameOver && (
         <GameOverModal
           session={completedSession}
           onPlayAgain={handlePlayAgain}
+          onHome={handleHome}
           onViewRecentGames={handleViewRecentGamesClick}
+          onViewLeaderboards={handleViewLeaderboardsClick}
           onLogout={onLogout}
         />
       )}
@@ -341,19 +351,32 @@ export const GameContainer: React.FC<GameContainerProps> = ({
         />
       )}
 
+      {showOverlay && (
+        <UserCard
+          username={user?.username || ''}
+          userStats={userStats}
+          onViewProfile={handleViewProfileClick}
+          onLogout={onLogout}
+        />
+      )}
+
       <div className='flex gap-6 items-center justify-center'>
-        {!showOverlay && gameState === 'playing' ? (
-          <div className='flex items-center'>
-            <button
-              onClick={handlePause}
-              className='border-2 border-pacman-yellow text-pacman-yellow hover:bg-pacman-yellow hover:text-pacman-dark font-family-arcade text-3xl w-14 h-14 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center'
-              title='Pause (ESC or Space)'
-            >
-              <PauseIcon />
-            </button>
-          </div>
-        ) : (
-          <div className='w-14'></div>
+        {gameState === 'playing' && (
+          <>
+            {!showOverlay ? (
+              <div className='flex items-center'>
+                <button
+                  onClick={handlePause}
+                  className='border-2 border-pacman-yellow text-pacman-yellow hover:bg-pacman-yellow hover:text-pacman-dark font-family-arcade text-3xl w-14 h-14 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center'
+                  title='Pause (ESC or Space)'
+                >
+                  <PauseIcon />
+                </button>
+              </div>
+            ) : (
+              <div className='w-14'></div>
+            )}
+          </>
         )}
 
         <div className='flex items-center justify-center bg-pacman-dark rounded-lg overflow-hidden relative shrink-0'>
@@ -376,31 +399,33 @@ export const GameContainer: React.FC<GameContainerProps> = ({
 
           {showOverlay && (
             <div className='absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm'>
-              {!isPausedState ? (
-                <StartGameMenu onStart={handleStart} />
-              ) : (
-                <PauseMenu
-                  onResume={handleResume}
-                  onAbandon={handleAbandonClick}
-                />
-              )}
+              <div className='flex flex-col items-center'>
+                {!isPausedState ? (
+                  <StartGameMenu onStart={handleStart} />
+                ) : (
+                  <PauseMenu
+                    onResume={handleResume}
+                    onAbandon={handleAbandonClick}
+                  />
+                )}
 
-              <UserInfoCards
-                username={user?.username || ''}
-                userStats={userStats}
-                onLogout={onLogout}
-                onViewRecentGames={handleViewRecentGamesClick}
-                onViewLeaderboards={handleViewLeaderboardsClick}
-                onViewProfile={handleViewProfileClick}
-              />
+                <NavigationButtons
+                  onViewRecentGames={handleViewRecentGamesClick}
+                  onViewLeaderboards={handleViewLeaderboardsClick}
+                />
+              </div>
             </div>
           )}
         </div>
 
-        {gameState === 'playing' ? (
-          <InGameStats highScore={userStats?.highestScore || 0} />
-        ) : (
-          <div className='w-[200px]'></div>
+        {gameState === 'playing' && (
+          <>
+            {!showOverlay ? (
+              <InGameStats highScore={userStats?.highestScore || 0} />
+            ) : (
+              <div className='w-[200px]'></div>
+            )}
+          </>
         )}
       </div>
     </Card>

@@ -8,7 +8,7 @@ interface CardProps {
 export const Card: React.FC<CardProps> = ({ children, className = '' }) => {
   return (
     <div
-      className={`rounded-lg p-6 ${className}`}
+      className={`rounded-lg ${className}`}
     >
       {children}
     </div>

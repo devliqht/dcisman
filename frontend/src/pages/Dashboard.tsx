@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { MainLayout } from '@/components/layout';
 import { GameContainer } from '@/components/game/GameContainer';
+import { GameTips } from '@/components/game/GameTips';
+import { BuildInfo } from '@/components/game/BuildInfo';
 
 export const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -11,8 +13,8 @@ export const Dashboard: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className='min-h-screen bg-pacman-dark flex items-center justify-center'>
-        <div className='w-full max-w-[900px] px-4'>
+      <div className='h-screen bg-pacman-dark flex items-center justify-center overflow-hidden'>
+        <div className='w-full h-full flex items-center justify-center p-4'>
           <GameContainer
             gameState={gameState}
             onStateChange={setGameState}
@@ -20,6 +22,8 @@ export const Dashboard: React.FC = () => {
             onLogout={logout}
           />
         </div>
+        <BuildInfo />
+        <GameTips show={gameState !== 'playing'} />
       </div>
     </MainLayout>
   );

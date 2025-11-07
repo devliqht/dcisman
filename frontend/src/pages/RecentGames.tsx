@@ -111,7 +111,7 @@ export const RecentGames: React.FC = () => {
             )}
             <button
               onClick={() => navigate('/')}
-              className='border-2 border-pacman-yellow text-pacman-yellow hover:bg-pacman-yellow hover:text-pacman-dark font-family-arcade w-12 h-12 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center'
+              className='border-2 border-pacman-yellow text-pacman-yellow hover:bg-pacman-yellow hover:text-black font-family-arcade w-12 h-12 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center'
               title='Back to Game'
             >
               <BackIcon />

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '@/components/ui';
+import { LeftArrowIcon, RightArrowIcon } from '@/components/game/icons';
 
 interface PaginationControlsProps {
   currentPage: number;
@@ -53,14 +53,14 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
 
   return (
     <div className='flex items-center justify-center gap-2'>
-      <Button
+      <button
         onClick={onPrevious}
         disabled={currentPage === 0}
-        variant='secondary'
-        className='font-family-vt323 text-lg! px-3! py-1! disabled:opacity-50 disabled:cursor-not-allowed'
+        className='border-2 border-gray-400 text-gray-400 hover:text-black hover:bg-gray-400 hover:text-pacman-dark font-family-arcade w-10 h-10 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-400'
+        title='Previous Page'
       >
-        Previous
-      </Button>
+        <LeftArrowIcon />
+      </button>
 
       <div className='flex gap-1'>
         {getPageNumbers().map((page, index) => {
@@ -81,7 +81,7 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
               onClick={() => onPageClick(page)}
               className={`px-3 py-1 rounded-lg font-family-vt323 text-lg transition-all duration-200 ${
                 currentPage === page
-                  ? 'bg-pacman-yellow text-pacman-dark'
+                  ? 'bg-pacman-yellow text-black'
                   : 'bg-maze-wall/50 text-white hover:bg-maze-wall/70'
               }`}
             >
@@ -91,14 +91,14 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
         })}
       </div>
 
-      <Button
+      <button
         onClick={onNext}
         disabled={currentPage >= totalPages - 1}
-        variant='secondary'
-        className='font-family-vt323 text-lg! px-3! py-1! disabled:opacity-50 disabled:cursor-not-allowed'
+        className='border-2 border-gray-400 text-gray-400 hover:text-black hover:bg-gray-400 hover:text-pacman-dark font-family-arcade w-10 h-10 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-400'
+        title='Next Page'
       >
-        Next
-      </Button>
+        <RightArrowIcon />
+      </button>
     </div>
   );
 };
