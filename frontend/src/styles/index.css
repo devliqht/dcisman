@@ -30,13 +30,21 @@
 
 body {
   font-family: var(--font-family-vt323);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   background-color: var(--color-black);
   color: var(--color-white);
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  text-rendering: optimizeSpeed;
+  font-smooth: never;
 }
 
-/* arcade font for headings */
+* {
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  text-rendering: optimizeSpeed;
+  font-smooth: never;
+}
+
 h1,
 h2,
 h3,
@@ -154,6 +162,17 @@ h6 {
 
 button:hover {
 	cursor: pointer;
+}
+
+.pixelated {
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  text-rendering: optimizeSpeed;
+  font-smooth: never;
 }
 
 @keyframes pulse {

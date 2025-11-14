@@ -10,14 +10,12 @@ export const GameTips: React.FC<GameTipsProps> = ({ show }) => {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    const tipDuration = 7000; // Show each tip for 7 seconds
-    const fadeDuration = 500; // Fade animation duration
+    const tipDuration = 7000; 
+    const fadeDuration = 500; 
 
     const interval = setInterval(() => {
-      // Start fade out
       setIsVisible(false);
 
-      // After fade out completes, change tip and fade in
       setTimeout(() => {
         setCurrentTipIndex((prev) => (prev + 1) % gameTips.length);
         setIsVisible(true);

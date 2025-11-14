@@ -17,7 +17,7 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         className='flex flex-col items-center gap-2 px-6 py-4 bg-pacman-dark/90 border-2 border-pacman-yellow rounded-lg hover:bg-pacman-yellow/10 transition-all duration-200 hover:cursor-pointer [&_svg]:!w-12 [&_svg]:!h-12 text-pacman-yellow'
       >
         <GamesIcon />
-        <span className='font-family-vt323 text-xl text-pacman-yellow'>
+        <span className='font-family-vt323 text-2xl text-pacman-yellow'>
           Recent Games
         </span>
       </button>
@@ -27,7 +27,7 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         className='flex flex-col items-center gap-2 px-6 py-4 bg-pacman-dark/90 border-2 border-pacman-yellow rounded-lg hover:bg-pacman-yellow/10 transition-all duration-200 hover:cursor-pointer [&_svg]:!w-12 [&_svg]:!h-12 text-pacman-yellow'
       >
         <TrophyIcon />
-        <span className='font-family-vt323 text-xl text-pacman-yellow'>
+        <span className='font-family-vt323 text-2xl text-pacman-yellow'>
           Leaderboards
         </span>
       </button>
