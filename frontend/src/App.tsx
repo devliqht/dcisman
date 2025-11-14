@@ -10,22 +10,8 @@ function App() {
         <Routes>
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
-          <Route
-            path='/'
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/recent-games'
-            element={
-              <ProtectedRoute>
-                <RecentGames />
-              </ProtectedRoute>
-            }
-          />
+          <Route path='/' element={<Dashboard />} />
+          <Route path='/recent-games' element={<RecentGames />} />
           <Route
             path='/profile'
             element={
@@ -34,14 +20,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path='/leaderboards'
-            element={
-              <ProtectedRoute>
-                <Leaderboards />
-              </ProtectedRoute>
-            }
-          />
+          <Route path='/leaderboards' element={<Leaderboards />} />
           <Route path='*' element={<Navigate to='/' replace />} />
         </Routes>
       </BrowserRouter>

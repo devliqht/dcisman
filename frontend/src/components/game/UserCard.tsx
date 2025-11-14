@@ -1,12 +1,15 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { StatsIcon, LogoutIcon } from './icons';
 import { type UserStats } from '@/services/statsService';
+import { Button } from '@/components/ui';
 
 interface UserCardProps {
-  username: string;
-  userStats: UserStats | null;
-  onViewProfile: () => void;
-  onLogout: () => void;
+  username?: string;
+  userStats?: UserStats | null;
+  onViewProfile?: () => void;
+  onLogout?: () => void;
+  isGuest?: boolean;
 }
 
 export const UserCard: React.FC<UserCardProps> = ({
@@ -14,7 +17,28 @@ export const UserCard: React.FC<UserCardProps> = ({
   userStats,
   onViewProfile,
   onLogout,
+  isGuest = false,
 }) => {
+  const navigate = useNavigate();
+
+  if (isGuest) {
+    return (
+      <div className='fixed top-0 left-0 bg-pacman-dark/90 border-2 border-pacman-yellow rounded-lg p-4 shadow-lg backdrop-blur-sm z-50 m-2'>
+        <div className='flex flex-col gap-3'>
+          <h4 className='font-family-vt323 text-lg text-gray-300 text-center'>
+            Playing as Guest
+          </h4>
+          <Button
+            onClick={() => navigate('/login')}
+            className='bg-pacman-yellow hover:bg-yellow-400 text-black font-family-arcade text-sm px-4 py-2 transition-all duration-200'
+          >
+            Sign In
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='fixed top-0 left-0 bg-pacman-dark/90 border-2 border-pacman-yellow rounded-lg p-4 shadow-lg backdrop-blur-sm z-50 m-2'>
       <div className='flex items-start gap-4'>

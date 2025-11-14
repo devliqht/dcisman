@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthLayout } from '@/components/layout';
 import { Button, Input, Card } from '@/components/ui';
-import { Pellet } from '@/components/decorative';
+import { SaveSessionModal, type GuestSessionData } from '@/components/game/SaveSessionModal';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { register } = useAuth();
+
+  const guestSession = location.state?.guestSession as GuestSessionData | undefined;
 
   const [formData, setFormData] = useState({
     username: '',
@@ -19,6 +22,7 @@ export const Register: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState('');
+  const [showSaveSession, setShowSaveSession] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -78,7 +82,13 @@ export const Register: React.FC = () => {
         email: formData.email,
         password: formData.password,
       });
-      navigate('/');
+
+      // If there's a guest session, show save session modal
+      if (guestSession) {
+        setShowSaveSession(true);
+      } else {
+        navigate('/');
+      }
     } catch (error) {
       console.error('Registration error:', error);
       const errorMessage =
@@ -90,6 +100,19 @@ export const Register: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSaveSession = async () => {
+    // TODO: Implement backend endpoint to save retroactive session
+    // For now, just navigate to dashboard
+    console.log('Saving guest session:', guestSession);
+    setShowSaveSession(false);
+    navigate('/');
+  };
+
+  const handleSkipSession = () => {
+    setShowSaveSession(false);
+    navigate('/');
   };
 
   return (
@@ -171,13 +194,16 @@ export const Register: React.FC = () => {
             </Link>
           </p>
         </div>
-
-        <div className='flex justify-center gap-4 mt-8'>
-          <Pellet isPowerPellet />
-          <Pellet />
-          <Pellet isPowerPellet />
-        </div>
       </Card>
+
+      {/* Save Session Modal */}
+      {showSaveSession && guestSession && (
+        <SaveSessionModal
+          session={guestSession}
+          onSave={handleSaveSession}
+          onSkip={handleSkipSession}
+        />
+      )}
     </AuthLayout>
   );
 };

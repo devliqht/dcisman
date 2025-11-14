@@ -20,7 +20,7 @@ type TabType = 'HIGH_SCORE' | 'HIGHEST_LEVEL' | 'TOTAL_GHOSTS';
 
 export const Leaderboards: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isGuest } = useAuth();
   const [leaderboards, setLeaderboards] = useState<LeaderboardResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -96,7 +96,7 @@ export const Leaderboards: React.FC = () => {
   const activeConfig = getTabConfig(activeTab);
 
   return (
-    <div className='min-h-screen bg-pacman-dark flex flex-col items-center pt-6 p-6'>
+    <div className='min-h-screen bg-pacman-dark flex flex-col items-center pt-10 p-6'>
       <Card className='w-full max-w-4xl bg-maze-wall/90'>
         <div className='flex justify-between items-start mb-6'>
           <div>
@@ -104,9 +104,9 @@ export const Leaderboards: React.FC = () => {
               Leaderboards
             </h1>
             {lastUpdated && (
-              <p className='text-gray-400 font-family-vt323 text-lg'>
+              <h3 className='text-gray-400 font-family-vt323 text-sm'>
                 Last updated: {lastUpdated.toLocaleTimeString()}
-              </p>
+              </h3>
             )}
           </div>
           <div className='flex items-center gap-4'>
@@ -128,6 +128,21 @@ export const Leaderboards: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Guest Banner */}
+        {isGuest && (
+          <div className='mb-6 bg-ghost-cyan/20 border-2 border-ghost-cyan rounded-lg p-4'>
+            <h3 className='text-ghost-cyan font-family-vt323 text-lg text-center'>
+              Sign in to compete on the leaderboards and track your rank!{' '}
+              <button
+                onClick={() => navigate('/register')}
+                className='text-pacman-yellow underline hover:text-white transition-colors font-bold'
+              >
+                Sign Up
+              </button>
+            </h3>
+          </div>
+        )}
 
         {loading && (
           <div className='text-center py-12'>
@@ -157,7 +172,7 @@ export const Leaderboards: React.FC = () => {
                   <button
                     key={tab}
                     onClick={() => handleTabChange(tab)}
-                    className={`flex-1 p-0 rounded-lg font-family-vt323 text-xl transition-all duration-200 flex items-center justify-center hover:cursor-pointer gap-2 ${
+                    className={`flex-1 p-2 rounded-lg font-family-vt323 text-2xl transition-all duration-200 flex items-center justify-center hover:cursor-pointer gap-2 ${
                       isActive
                         ? `${config.color} ${config.bgColor} border-2 ${config.borderColor}`
                         : 'text-gray-400 hover:text-white hover:bg-maze-wall/30 border-2 border-transparent'

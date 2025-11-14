@@ -34,4 +34,5 @@ export interface AuthContextType {
   register: (userData: RegisterRequest) => Promise<AuthResponse>;
   logout: () => void;
   isAuthenticated: boolean;
+  isGuest: boolean;
 }

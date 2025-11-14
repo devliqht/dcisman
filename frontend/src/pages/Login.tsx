@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthLayout } from '@/components/layout';
 import { Button, Input, Card } from '@/components/ui';
-import { Pellet } from '@/components/decorative';
+import {
+  SaveSessionModal,
+  type GuestSessionData,
+} from '@/components/game/SaveSessionModal';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+
+  const guestSession = location.state?.guestSession as
+    | GuestSessionData
+    | undefined;
 
   const [formData, setFormData] = useState({
     usernameOrEmail: '',
@@ -17,6 +25,7 @@ export const Login: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState('');
+  const [showSaveSession, setShowSaveSession] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -55,7 +64,12 @@ export const Login: React.FC = () => {
 
     try {
       await login(formData);
-      navigate('/');
+
+      if (guestSession) {
+        setShowSaveSession(true);
+      } else {
+        navigate('/');
+      }
     } catch (error) {
       console.error('Login error:', error);
       const errorMessage =
@@ -69,6 +83,19 @@ export const Login: React.FC = () => {
     }
   };
 
+  const handleSaveSession = async () => {
+    // TODO: Implement backend endpoint to save retroactive session
+    // For now, just navigate to dashboard
+    console.log('Saving guest session:', guestSession);
+    setShowSaveSession(false);
+    navigate('/');
+  };
+
+  const handleSkipSession = () => {
+    setShowSaveSession(false);
+    navigate('/');
+  };
+
   return (
     <AuthLayout>
       <Card className='w-full'>
@@ -77,7 +104,7 @@ export const Login: React.FC = () => {
             DCISMan
           </h1>
           <p className='text-ghost-cyan font-family-vt323 text-2xl'>
-            Login to Play
+            Login to save your game stats
           </p>
         </div>
 
@@ -114,10 +141,17 @@ export const Login: React.FC = () => {
             isLoading={loading}
             className='w-full'
           >
-            {loading ? 'Loading...' : 'Start Game'}
+            {loading ? 'Loading...' : 'Login'}
           </Button>
         </form>
-
+        <div className='mt-4 text-center'>
+          <Link to='/'>
+            <Button variant='secondary' className='w-full'>
+              Back to game
+            </Button>
+          </Link>
+        </div>
+        
         <div className='mt-6 text-center'>
           <p className='text-white font-family-vt323 text-2xl'>
             New player?{' '}
@@ -129,14 +163,15 @@ export const Login: React.FC = () => {
             </Link>
           </p>
         </div>
-
-        {/* Decorative pellets */}
-        <div className='flex justify-center gap-4 mt-8'>
-          <Pellet />
-          <Pellet isPowerPellet />
-          <Pellet />
-        </div>
       </Card>
+
+      {showSaveSession && guestSession && (
+        <SaveSessionModal
+          session={guestSession}
+          onSave={handleSaveSession}
+          onSkip={handleSkipSession}
+        />
+      )}
     </AuthLayout>
   );
 };

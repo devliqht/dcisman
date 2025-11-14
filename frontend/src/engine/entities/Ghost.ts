@@ -393,6 +393,10 @@ export class Ghost {
     this.flickerTimer = 0;
   }
 
+  public getName(): GhostName {
+    return this.name;
+  }
+
   // 0 = transparent, 1 = body, 2 = eye white, 3 = eye pupil
   private getGhostPixels(): number[][] {
     return [
@@ -425,6 +429,7 @@ export class Ghost {
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     ];
   }
+
 
   public render(ctx: CanvasRenderingContext2D): void {
     if (this.respawnDelay > 0) return;

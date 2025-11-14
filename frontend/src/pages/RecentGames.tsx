@@ -9,12 +9,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { BackIcon } from '@/components/game/icons';
 import { GameSessionCard } from '@/components/game/GameSessionCard';
 import { PaginationControls } from '@/components/common/PaginationControls';
+import { EmptyState } from '@/components/common/EmptyState';
 
 type TabType = 'ALL' | 'COMPLETED' | 'ABANDONED';
 
 export const RecentGames: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isGuest } = useAuth();
   const [sessions, setSessions] = useState<GameSessionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,6 +24,11 @@ export const RecentGames: React.FC = () => {
   const pageSize = 5;
 
   useEffect(() => {
+    if (isGuest) {
+      setLoading(false);
+      return;
+    }
+
     const fetchSessions = async () => {
       try {
         setLoading(true);
@@ -41,7 +47,7 @@ export const RecentGames: React.FC = () => {
     };
 
     fetchSessions();
-  }, []);
+  }, [isGuest]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -88,16 +94,16 @@ export const RecentGames: React.FC = () => {
   };
 
   return (
-    <div className='min-h-screen bg-pacman-dark flex flex-col items-center pt-6 p-6'>
+    <div className='min-h-screen bg-pacman-dark flex flex-col items-center pt-10 p-6'>
       <Card className='w-full max-w-5xl bg-maze-wall/90'>
         <div className='flex justify-between items-start mb-6'>
           <div>
             <h1 className='text-4xl font-family-arcade text-pacman-yellow mb-2'>
               Recent Games
             </h1>
-            <p className='text-gray-400 font-family-vt323 text-lg'>
+            <h3 className='text-gray-400 font-family-vt323 text-sm'>
               {user?.username}'s Game History
-            </p>
+            </h3>
           </div>
           <div className='flex items-center gap-4'>
             {!loading && filteredSessions.length > 0 && (
@@ -142,7 +148,15 @@ export const RecentGames: React.FC = () => {
           </div>
         )}
 
-        {!loading && !error && sessions.length === 0 && (
+        {isGuest && !loading && (
+          <EmptyState
+            title='No Game History'
+            message='Sign in to save your game history'
+            showAuthButtons={true}
+          />
+        )}
+
+        {!loading && !error && !isGuest && sessions.length === 0 && (
           <div className='text-center py-12'>
             <p className='text-gray-400 font-family-vt323 text-2xl mb-4'>
               No games played yet
@@ -153,7 +167,7 @@ export const RecentGames: React.FC = () => {
           </div>
         )}
 
-        {!loading && !error && sessions.length > 0 && (
+        {!loading && !error && !isGuest && sessions.length > 0 && (
           <>
             <div className='flex gap-2 mb-4 pb-2'>
               {(['ALL', 'COMPLETED', 'ABANDONED'] as TabType[]).map((tab) => {
@@ -162,7 +176,7 @@ export const RecentGames: React.FC = () => {
                   <button
                     key={tab}
                     onClick={() => handleTabChange(tab)}
-                    className={`flex-1 p-3 rounded-lg font-family-vt323 text-xl transition-all duration-200 ${
+                    className={`flex-1 p-3 rounded-lg font-family-arcade text-sm transition-all duration-200 ${
                       isActive
                         ? 'bg-pacman-yellow text-black border-2 border-pacman-yellow'
                         : 'text-gray-400 hover:text-white hover:bg-maze-wall/30 border-2 border-transparent'

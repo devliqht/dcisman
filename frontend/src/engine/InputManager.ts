@@ -36,10 +36,6 @@ export class InputManager {
       ].includes(key)
     ) {
       e.preventDefault();
-
-      if (e.repeat) {
-        return;
-      }
     }
 
     this.keysPressed.add(key);

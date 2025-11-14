@@ -17,12 +17,14 @@ import {
   type GameSessionData,
 } from '@/services/gameSessionService';
 import { getMyStats, type UserStats } from '@/services/statsService';
+import type { GuestSessionData } from './SaveSessionModal';
 
 interface GameContainerProps {
   gameState: 'idle' | 'playing' | 'paused';
   onStateChange: (state: 'idle' | 'playing' | 'paused') => void;
   user: { username: string } | null;
   onLogout: () => void;
+  isGuest?: boolean;
 }
 
 export const GameContainer: React.FC<GameContainerProps> = ({
@@ -30,6 +32,7 @@ export const GameContainer: React.FC<GameContainerProps> = ({
   onStateChange,
   user,
   onLogout,
+  isGuest = false,
 }) => {
   const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -49,14 +52,18 @@ export const GameContainer: React.FC<GameContainerProps> = ({
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const updateIntervalRef = useRef<number | null>(null);
   const currentSessionRef = useRef<GameSessionData | null>(null);
+  const [lastGuestGame, setLastGuestGame] = useState<GuestSessionData | null>(null);
+  const isTransitioningRef = useRef(false);
 
   // sync current session ref
   useEffect(() => {
     currentSessionRef.current = currentSession;
   }, [currentSession]);
 
-  // fetch user stats on mount
+  // fetch user stats on mount (skip for guests)
   useEffect(() => {
+    if (isGuest) return;
+
     const fetchStats = async () => {
       try {
         const stats = await getMyStats();
@@ -66,7 +73,7 @@ export const GameContainer: React.FC<GameContainerProps> = ({
       }
     };
     fetchStats();
-  }, []);
+  }, [isGuest]);
 
   // refetch stats helper
   const refetchStats = async () => {
@@ -84,7 +91,32 @@ export const GameContainer: React.FC<GameContainerProps> = ({
       const session = currentSessionRef.current;
       const engine = engineRef.current;
 
-      if (session && engine) {
+      if (updateIntervalRef.current) {
+        clearInterval(updateIntervalRef.current);
+        updateIntervalRef.current = null;
+      }
+
+      if (isGuest) {
+        // Guest mode: store session data locally, no API calls
+        if (engine && status === 'COMPLETED') {
+          const guestSession: GuestSessionData = {
+            score: engine.getScore(),
+            levelReached: engine.getLevel(),
+            durationSeconds: engine.getGameTime(),
+            ghostsEaten: engine.getGhostsEaten(),
+            powerUpsUsed: engine.getPowerUpsUsed(),
+            timestamp: Date.now(),
+          };
+          setLastGuestGame(guestSession);
+          setShowGameOver(true);
+        }
+
+        setCurrentSession(null);
+        onStateChange('idle');
+        setShowOverlay(true);
+        setIsPausedState(false);
+      } else if (session && engine) {
+        // Authenticated mode: save to backend
         try {
           const endedSession = await endGameSession(session.id, {
             score: engine.getScore(),
@@ -95,14 +127,13 @@ export const GameContainer: React.FC<GameContainerProps> = ({
             status,
           });
 
-          if (updateIntervalRef.current) {
-            clearInterval(updateIntervalRef.current);
-            updateIntervalRef.current = null;
+          setCurrentSession(null);
+
+          if (status === 'COMPLETED') {
+            setCompletedSession(endedSession);
+            setShowGameOver(true);
           }
 
-          setCurrentSession(null);
-          setCompletedSession(endedSession);
-          setShowGameOver(true);
           onStateChange('idle');
           setShowOverlay(true);
           setIsPausedState(false);
@@ -113,6 +144,7 @@ export const GameContainer: React.FC<GameContainerProps> = ({
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [onStateChange]
   );
 
@@ -121,12 +153,15 @@ export const GameContainer: React.FC<GameContainerProps> = ({
   }, [endSession]);
 
   const handlePause = useCallback(async () => {
+    if (isTransitioningRef.current || gameState !== 'playing') return;
+
     engineRef.current?.pause();
     onStateChange('paused');
     setShowOverlay(true);
     setIsPausedState(true);
 
-    if (currentSession && engineRef.current) {
+    // Skip API call for guests
+    if (!isGuest && currentSession && engineRef.current) {
       try {
         await updateGameSession(currentSession.id, {
           score: engineRef.current.getScore(),
@@ -139,22 +174,67 @@ export const GameContainer: React.FC<GameContainerProps> = ({
         console.error('failed to update session on pause:', error);
       }
     }
-  }, [currentSession, onStateChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSession, onStateChange, gameState]);
 
   const handleResume = useCallback(() => {
+    if (isTransitioningRef.current || gameState !== 'paused') return;
+
     engineRef.current?.resume();
     onStateChange('playing');
     setShowOverlay(false);
     setIsPausedState(false);
-  }, [onStateChange]);
+  }, [onStateChange, gameState]);
 
-  const handleAbandonClick = () => setShowAbandonConfirm(true);
+  const handleAbandonClick = () => {
+    if (isTransitioningRef.current) return;
+    setShowAbandonConfirm(true);
+  };
 
   const handleAbandonConfirm = useCallback(async () => {
+    if (isTransitioningRef.current) return;
+
+    isTransitioningRef.current = true;
     setShowAbandonConfirm(false);
-    await endSession('ABANDONED');
+
+    // Stop game loop and intervals immediately
+    if (updateIntervalRef.current) {
+      clearInterval(updateIntervalRef.current);
+      updateIntervalRef.current = null;
+    }
+
+    // Capture stats BEFORE resetting engine
+    const session = currentSessionRef.current;
+    const engine = engineRef.current;
+    const capturedStats = engine ? {
+      score: engine.getScore(),
+      levelReached: engine.getLevel(),
+      durationSeconds: engine.getGameTime(),
+      ghostsEaten: engine.getGhostsEaten(),
+      powerUpsUsed: engine.getPowerUpsUsed(),
+    } : null;
+
+    // NOW reset engine (stops game loop, clears stats)
     engineRef.current?.reset();
-  }, [endSession]);
+
+    // End session in background with captured stats
+    if (!isGuest && session && capturedStats) {
+      endGameSession(session.id, {
+        ...capturedStats,
+        status: 'ABANDONED',
+      }).catch(error => console.error('failed to end session:', error));
+    }
+
+    // Reset all UI state synchronously
+    setCurrentSession(null);
+    setShowGameOver(false);
+    setCompletedSession(null);
+    setIsPausedState(false);
+    setShowOverlay(true);
+    onStateChange('idle');
+
+    isTransitioningRef.current = false;
+  }, [isGuest, onStateChange]);
 
   useEffect(() => {
     if (canvasRef.current && !engineRef.current) {
@@ -165,7 +245,8 @@ export const GameContainer: React.FC<GameContainerProps> = ({
       const session = currentSessionRef.current;
       const engine = engineRef.current;
 
-      if (session && engine) {
+      // Skip API call for guests
+      if (!isGuest && session && engine) {
         endGameSession(session.id, {
           score: engine.getScore(),
           levelReached: engine.getLevel(),
@@ -184,6 +265,7 @@ export const GameContainer: React.FC<GameContainerProps> = ({
 
       engineRef.current?.destroy();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handleGameOver]);
 
   useEffect(() => {
@@ -203,44 +285,78 @@ export const GameContainer: React.FC<GameContainerProps> = ({
   }, [gameState, handlePause, handleResume]);
 
   const handleStart = async () => {
+    if (isTransitioningRef.current || gameState === 'playing') return;
+
     try {
+      isTransitioningRef.current = true;
+
+      // Ensure clean state
       setShowGameOver(false);
       setCompletedSession(null);
+      setLastGuestGame(null);
 
-      const session = await startGameSession();
-      setCurrentSession(session);
+      // Clear any existing intervals
+      if (updateIntervalRef.current) {
+        clearInterval(updateIntervalRef.current);
+        updateIntervalRef.current = null;
+      }
 
-      engineRef.current?.start();
+      // Reset engine to ensure clean state
+      engineRef.current?.reset();
+
+      // Update UI immediately BEFORE starting engine (so user sees game, not lobby)
       onStateChange('playing');
       setShowOverlay(false);
       setIsPausedState(false);
 
-      updateIntervalRef.current = window.setInterval(() => {
-        if (engineRef.current && session) {
-          updateGameSession(session.id, {
-            score: engineRef.current.getScore(),
-            levelReached: engineRef.current.getLevel(),
-            durationSeconds: engineRef.current.getGameTime(),
-            ghostsEaten: engineRef.current.getGhostsEaten(),
-            powerUpsUsed: engineRef.current.getPowerUpsUsed(),
-          }).catch(error => {
-            console.error('failed to update session:', error);
-          });
-        }
-      }, 5000);
+      if (isGuest) {
+        // Guest mode: skip API call, just start engine
+        await engineRef.current?.start();
+      } else {
+        // Authenticated mode: create session
+        const session = await startGameSession();
+        setCurrentSession(session);
+
+        // Start engine (plays audio)
+        await engineRef.current?.start();
+
+        // Periodic updates for authenticated users only
+        updateIntervalRef.current = window.setInterval(() => {
+          if (engineRef.current && session) {
+            updateGameSession(session.id, {
+              score: engineRef.current.getScore(),
+              levelReached: engineRef.current.getLevel(),
+              durationSeconds: engineRef.current.getGameTime(),
+              ghostsEaten: engineRef.current.getGhostsEaten(),
+              powerUpsUsed: engineRef.current.getPowerUpsUsed(),
+            }).catch(error => {
+              console.error('failed to update session:', error);
+            });
+          }
+        }, 5000);
+      }
 
       if (canvasRef.current) {
         canvasRef.current.focus({ preventScroll: true });
       }
+
+      isTransitioningRef.current = false;
     } catch (error) {
       console.error('failed to start game session:', error);
+      isTransitioningRef.current = false;
+
+      // Reset to idle state on error
+      onStateChange('idle');
+      setShowOverlay(true);
+      setIsPausedState(false);
     }
   };
 
   const handlePlayAgain = () => {
+    if (isTransitioningRef.current) return;
     setShowGameOver(false);
     setCompletedSession(null);
-    engineRef.current?.reset();
+    setLastGuestGame(null);
     handleStart();
   };
 
@@ -295,6 +411,8 @@ export const GameContainer: React.FC<GameContainerProps> = ({
       {showGameOver && (
         <GameOverModal
           session={completedSession}
+          guestSession={lastGuestGame}
+          isGuest={isGuest}
           onPlayAgain={handlePlayAgain}
           onHome={handleHome}
           onViewRecentGames={handleViewRecentGamesClick}
@@ -357,6 +475,7 @@ export const GameContainer: React.FC<GameContainerProps> = ({
           userStats={userStats}
           onViewProfile={handleViewProfileClick}
           onLogout={onLogout}
+          isGuest={isGuest}
         />
       )}
 
@@ -419,13 +538,14 @@ export const GameContainer: React.FC<GameContainerProps> = ({
         </div>
 
         {gameState === 'playing' && (
-          <>
-            {!showOverlay ? (
-              <InGameStats highScore={userStats?.highestScore || 0} />
-            ) : (
-              <div className='w-[200px]'></div>
-            )}
-          </>
+	        <>
+	          {!showOverlay ? (
+	            <InGameStats highScore={userStats?.highestScore || 0} />
+	          ) : (
+	            <div className='w-[200px]'></div>
+	
+	          )}
+	        </>
         )}
       </div>
     </Card>
