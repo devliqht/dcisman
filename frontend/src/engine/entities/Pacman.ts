@@ -56,10 +56,13 @@ export class Pacman {
 
     if (atCenter && this.nextDirection !== null) {
       if (this.canMove(this.nextDirection, maze)) {
+        // Only snap to center if actually CHANGING direction
+        if (this.direction !== this.nextDirection) {
+          this.pixelX = centerX;
+          this.pixelY = centerY;
+        }
         this.direction = this.nextDirection;
         this.nextDirection = null;
-        this.pixelX = centerX;
-        this.pixelY = centerY;
       }
     }
 

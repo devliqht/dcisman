@@ -10,13 +10,14 @@ export class InputManager {
     this.keyDownHandler = this.handleKeyDown.bind(this);
     this.keyUpHandler = this.handleKeyUp.bind(this);
 
-    window.addEventListener('keydown', this.keyDownHandler, true);
-    window.addEventListener('keyup', this.keyUpHandler, true);
-    document.addEventListener('keydown', this.keyDownHandler, true);
-    document.addEventListener('keyup', this.keyUpHandler, true);
+    window.addEventListener('keydown', this.keyDownHandler);
+    window.addEventListener('keyup', this.keyUpHandler);
   }
 
   private handleKeyDown(e: KeyboardEvent): void {
+    // Ignore repeat events to prevent stopping issue
+    if (e.repeat) return;
+
     const key = e.key;
 
     if (
@@ -94,9 +95,7 @@ export class InputManager {
   }
 
   public destroy(): void {
-    window.removeEventListener('keydown', this.keyDownHandler, true);
-    window.removeEventListener('keyup', this.keyUpHandler, true);
-    document.removeEventListener('keydown', this.keyDownHandler, true);
-    document.removeEventListener('keyup', this.keyUpHandler, true);
+    window.removeEventListener('keydown', this.keyDownHandler);
+    window.removeEventListener('keyup', this.keyUpHandler);
   }
 }
