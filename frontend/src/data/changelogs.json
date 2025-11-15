@@ -1,0 +1,136 @@
+[
+ {
+    "version": "v1.5.1",
+    "date": "2025-11-15",
+    "changes": [
+      {
+        "category": "Bug Fixes",
+        "items": [
+          "Fixed long pressing WASD would stop pacman",
+          "You can no longer pause the game when the game is still starting"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "v1.5.0",
+    "date": "2025-11-14",
+    "changes": [
+      {
+        "category": "Features",
+        "items": [
+          "Added guest play feature",
+          "Added changelog screen with version history"
+        ]
+      },
+      {
+        "category": "UI Improvements",
+        "items": [
+          "Refactored buttons and UI components",
+          "General UI improvements across the application"
+        ]
+      },
+      {
+        "category": "Content",
+        "items": [
+          "Added events modal for announcements",
+          "Added information modal with game tips"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "v1.4.0",
+    "date": "2025-11-6",
+    "changes": [
+      {
+        "category": "Features",
+        "items": [
+          "Added build info display",
+          "Implemented game tips system"
+        ]
+      },
+      {
+        "category": "Enhancements",
+        "items": [
+          "Improved game performance",
+          "Enhanced collision detection"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "v1.3.0",
+    "date": "2025-11-05",
+    "changes": [
+      {
+        "category": "Features",
+        "items": [
+          "Added leaderboard system",
+          "Implemented user authentication"
+        ]
+      },
+      {
+        "category": "Bug Fixes",
+        "items": [
+          "Fixed ghost AI pathfinding issues",
+          "Resolved score calculation bugs"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "v1.2.0",
+    "date": "2025-11-5",
+    "changes": [
+      {
+        "category": "Features",
+        "items": [
+          "Added power pellet mechanics",
+          "Implemented ghost scared mode"
+        ]
+      },
+      {
+        "category": "UI Improvements",
+        "items": [
+          "Redesigned game interface",
+          "Added responsive design support"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "v1.1.0",
+    "date": "2025-11-4",
+    "changes": [
+      {
+        "category": "Features",
+        "items": [
+          "Added score tracking",
+          "Implemented level progression"
+        ]
+      },
+      {
+        "category": "Bug Fixes",
+        "items": [
+          "Fixed collision detection",
+          "Resolved rendering issues"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "v1.0.0",
+    "date": "2025-11-3",
+    "changes": [
+      {
+        "category": "Initial Release",
+        "items": [
+          "Basic Pac-Man gameplay",
+          "Ghost AI implementation",
+          "Maze rendering system"
+        ]
+      }
+    ]
+  }
+]
