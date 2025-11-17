@@ -94,7 +94,7 @@ export const GameContainer: React.FC<GameContainerProps> = ({
       }
 
       if (isGuest) {
-        if (engine && status === 'COMPLETED') {
+        if (engine) {
           const guestSession: GuestSessionData = {
             score: engine.getScore(),
             levelReached: engine.getLevel(),
@@ -104,7 +104,10 @@ export const GameContainer: React.FC<GameContainerProps> = ({
             timestamp: Date.now(),
           };
           setLastGuestGame(guestSession);
-          setShowGameOver(true);
+
+          if (status === 'COMPLETED') {
+            setShowGameOver(true);
+          }
         }
 
         setCurrentSession(null);
@@ -212,16 +215,29 @@ export const GameContainer: React.FC<GameContainerProps> = ({
 
     engineRef.current?.reset();
 
-    if (!isGuest && session && capturedStats) {
-      endGameSession(session.id, {
-        ...capturedStats,
-        status: 'ABANDONED',
-      }).catch(error => console.error('failed to end session:', error));
+    if (isGuest) {
+      if (capturedStats) {
+        const guestSession: GuestSessionData = {
+          ...capturedStats,
+          timestamp: Date.now(),
+        };
+        setLastGuestGame(guestSession);
+        setShowGameOver(true);
+      }
+    } else if (session && capturedStats) {
+      try {
+        const endedSession = await endGameSession(session.id, {
+          ...capturedStats,
+          status: 'ABANDONED',
+        });
+        setCompletedSession(endedSession);
+        setShowGameOver(true);
+      } catch (error) {
+        console.error('failed to end session:', error);
+      }
     }
 
     setCurrentSession(null);
-    setShowGameOver(false);
-    setCompletedSession(null);
     setIsPausedState(false);
     setShowOverlay(true);
     onStateChange('idle');

@@ -15,29 +15,9 @@ export class InputManager {
   }
 
   private handleKeyDown(e: KeyboardEvent): void {
-    // Ignore repeat events to prevent stopping issue
-    if (e.repeat) return;
+    // if (e.repeat) return;
 
     const key = e.key;
-
-    if (
-      [
-        'ArrowUp',
-        'ArrowDown',
-        'ArrowLeft',
-        'ArrowRight',
-        'w',
-        'W',
-        'a',
-        'A',
-        's',
-        'S',
-        'd',
-        'D',
-      ].includes(key)
-    ) {
-      e.preventDefault();
-    }
 
     this.keysPressed.add(key);
 
