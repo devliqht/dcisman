@@ -35,6 +35,29 @@ const authService = {
     const token = localStorage.getItem('token');
     return !!token;
   },
+
+  updateProfile: async (data: { name?: string; idNumber?: string }): Promise<{
+    id: number;
+    username: string;
+    email: string;
+    role: string;
+    name: string | null;
+    idNumber: string | null;
+    isActive: boolean;
+    createdAt: string;
+  }> => {
+    const response = await api.put('/auth/profile', data);
+    const currentUser = authService.getCurrentUser();
+    if (currentUser && response.data) {
+      const updatedUser = {
+        ...currentUser,
+        name: response.data.name,
+        idNumber: response.data.idNumber,
+      };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+    return response.data;
+  },
 };
 
 export default authService;

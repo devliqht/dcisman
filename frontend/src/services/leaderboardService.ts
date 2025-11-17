@@ -3,6 +3,8 @@ import api from './api';
 export interface LeaderboardEntry {
   userId: number;
   username: string;
+  name?: string | null;
+  idNumber?: string | null;
   value: number;
   rank: number;
 }

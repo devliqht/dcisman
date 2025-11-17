@@ -2,12 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button } from '@/components/ui';
 import { getMyStats, formatTime, type UserStats } from '@/services/statsService';
+import authService from '@/services/authService';
+import { useAuth } from '@/hooks/useAuth';
 
 export const Profile: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [name, setName] = useState('');
+  const [idNumber, setIdNumber] = useState('');
+  const [updateError, setUpdateError] = useState<string | null>(null);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -24,9 +32,13 @@ export const Profile: React.FC = () => {
       }
     };
     fetchStats();
-  }, []);
 
-  // ESC key to go back
+    if (user) {
+      setName(user.name || '');
+      setIdNumber(user.idNumber || '');
+    }
+  }, [user]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -41,6 +53,38 @@ export const Profile: React.FC = () => {
   const calculateCompletionRate = () => {
     if (!stats || stats.totalGamesPlayed === 0) return 0;
     return ((stats.totalGamesCompleted / stats.totalGamesPlayed) * 100).toFixed(1);
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!user) return;
+
+    if (idNumber && !/^[0-9]{0,8}$/.test(idNumber)) {
+      setUpdateError('ID number must be numeric and max 8 digits');
+      return;
+    }
+
+    try {
+      setUpdating(true);
+      setUpdateError(null);
+      await authService.updateProfile({
+        name: name.trim() || undefined,
+        idNumber: idNumber.trim() || undefined,
+      });
+      setIsEditing(false);
+      window.location.reload();
+    } catch (err: unknown) {
+      console.error('failed to update profile:', err);
+      setUpdateError('Failed to update profile. Please try again.');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setName(user?.name || '');
+    setIdNumber(user?.idNumber || '');
+    setUpdateError(null);
   };
 
   return (
@@ -76,6 +120,115 @@ export const Profile: React.FC = () => {
 
         {!loading && !error && stats && (
           <div className='space-y-6'>
+            <div className='bg-pacman-dark/50 border-2 border-maze-blue rounded-lg p-6'>
+              <div className='flex justify-between items-center mb-2'>
+                <h2 className='text-2xl font-family-arcade text-pacman-yellow'>
+                  Profile Information
+                </h2>
+                {!isEditing && (
+                  <Button
+                    onClick={() => setIsEditing(true)}
+                    variant='secondary'
+                    className='font-family-vt323 text-2xl!'
+                  >
+                    Edit
+                  </Button>
+                )}
+              </div>
+
+              {isEditing ? (
+                <div className='space-y-4'>
+                  <div>
+                    <label className='block text-gray-300 font-family-vt323 text-3xl mb-2'>
+                      Name (Full Name)
+                    </label>
+                    <input
+                      type='text'
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder='Enter your full name'
+                      maxLength={100}
+                      className='w-full px-4 py-2 bg-pacman-dark border-2 border-maze-blue rounded text-white font-family-vt323 text-2xl focus:outline-none focus:border-pacman-yellow'
+                    />
+                  </div>
+
+                  <div>
+                    <label className='block text-gray-300 font-family-vt323 text-3xl mb-2'>
+                      ID Number (Max 8 digits)
+                    </label>
+                    <input
+                      type='text'
+                      value={idNumber}
+                      onChange={(e) => setIdNumber(e.target.value)}
+                      placeholder='e.g., 22103604'
+                      maxLength={8}
+                      pattern='[0-9]*'
+                      className='w-full px-4 py-2 bg-pacman-dark border-2 border-maze-blue rounded text-white font-family-vt323 text-2xl focus:outline-none focus:border-pacman-yellow'
+                    />
+                  </div>
+
+                  {updateError && (
+                    <p className='text-ghost-red font-family-vt323 text-xl'>
+                      {updateError}
+                    </p>
+                  )}
+
+                  <div className='flex gap-3'>
+                    <Button
+                      onClick={handleUpdateProfile}
+                      disabled={updating}
+                      className='font-family-arcade text-lg'
+                    >
+                      {updating ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                    <Button
+                      onClick={handleCancelEdit}
+                      variant='secondary'
+                      disabled={updating}
+                      className='font-family-vt323 text-xl!'
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className='space-y-3'>
+                  <div className='flex items-center'>
+                    <span className='text-gray-400 font-family-vt323 text-3xl w-32'>
+                      Username:
+                    </span>
+                    <span className='text-white font-family-vt323 text-2xl'>
+                      {user?.username || 'N/A'}
+                    </span>
+                  </div>
+                  <div className='flex items-center'>
+                    <span className='text-gray-400 font-family-vt323 text-3xl w-32'>
+                      Name:
+                    </span>
+                    <span className='text-white font-family-vt323 text-2xl'>
+                      {user?.name || 'Not set'}
+                    </span>
+                  </div>
+                  <div className='flex items-center'>
+                    <span className='text-gray-400 font-family-vt323 text-3xl w-32'>
+                      ID Number:
+                    </span>
+                    <span className='text-white font-family-vt323 text-2xl'>
+                      {user?.idNumber || 'Not set'}
+                    </span>
+                  </div>
+                  <div className='flex items-center'>
+                    <span className='text-gray-400 font-family-vt323 text-3xl w-32'>
+                      Email:
+                    </span>
+                    <span className='text-white font-family-vt323 text-2xl'>
+                      {user?.email || 'N/A'}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
               <StatCard
                 label='Total Games'

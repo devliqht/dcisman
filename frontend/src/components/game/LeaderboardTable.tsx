@@ -70,12 +70,19 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                       </span>
                     )}
                   </div>
-                  <div className='col-span-6 flex items-center'>
-                    <span className={`font-family-vt323 text-3xl truncate ${
+                  <div className='col-span-6 flex flex-col justify-center'>
+                    <h5 className={`font-family-vt323 text-xl truncate ${
                       isCurrentUser ? 'text-pacman-yellow' : 'text-white'
                     }`}>
                       {entry.username}
-                    </span>
+                    </h5>
+                    {(entry.name || entry.idNumber) && (
+                      <span className='text-gray-400 font-family-vt323 text-2xl truncate'>
+                        {entry.name && <span>{entry.name}</span>}
+                        {entry.name && entry.idNumber && <span> - </span>}
+                        {entry.idNumber && <span>{entry.idNumber}</span>}
+                      </span>
+                    )}
                   </div>
                   <div className='col-span-4 flex items-center justify-end'>
                     <span className={`${color} font-family-arcade text-2xl`}>

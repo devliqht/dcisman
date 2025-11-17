@@ -1,4 +1,23 @@
 [
+	{
+    "version": "v1.5.2",
+    "date": "2025-11-15",
+    "changes": [
+    	{
+   		"category": "Features",
+     	"items": [
+      	"You can now set your name and ID number"
+      ]
+     },
+      {
+        "category": "Bug Fixes",
+        "items": [
+          "Fixed pause screen not appearing when playing as guest",
+          "Fixed pause screen not appearing when abandoning game"
+        ]
+      }
+    ]
+  },
  {
     "version": "v1.5.1",
     "date": "2025-11-15",

@@ -3,6 +3,8 @@ export interface User {
   username: string;
   email: string;
   role: 'USER' | 'ADMIN';
+  name?: string | null;
+  idNumber?: string | null;
   isActive: boolean;
   createdAt: string;
 }
@@ -14,6 +16,8 @@ export interface AuthResponse {
   username: string;
   email: string;
   role: string;
+  name?: string | null;
+  idNumber?: string | null;
 }
 
 export interface RegisterRequest {
