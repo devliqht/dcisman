@@ -4,6 +4,7 @@ import com.dcisman.dto.AuthResponse;
 import com.dcisman.dto.LoginRequest;
 import com.dcisman.dto.MessageResponse;
 import com.dcisman.dto.RegisterRequest;
+import com.dcisman.dto.UpdateProfileRequest;
 import com.dcisman.entity.User;
 import com.dcisman.service.AuthService;
 import jakarta.validation.Valid;
@@ -62,6 +63,8 @@ public class AuthController {
             response.put("username", user.getUsername());
             response.put("email", user.getEmail());
             response.put("role", user.getRole().name());
+            response.put("name", user.getName());
+            response.put("idNumber", user.getIdNumber());
             response.put("isActive", user.getIsActive());
             response.put("createdAt", user.getCreatedAt());
 
@@ -70,6 +73,32 @@ public class AuthController {
             log.error("Failed to get current user: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new MessageResponse("Unauthorized"));
+        }
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+
+            User updatedUser = authService.updateProfile(username, request);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", updatedUser.getId());
+            response.put("username", updatedUser.getUsername());
+            response.put("email", updatedUser.getEmail());
+            response.put("role", updatedUser.getRole().name());
+            response.put("name", updatedUser.getName());
+            response.put("idNumber", updatedUser.getIdNumber());
+            response.put("isActive", updatedUser.getIsActive());
+            response.put("createdAt", updatedUser.getCreatedAt());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Failed to update profile: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse(e.getMessage()));
         }
     }
 

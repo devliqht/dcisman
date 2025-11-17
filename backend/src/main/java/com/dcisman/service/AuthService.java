@@ -3,6 +3,7 @@ package com.dcisman.service;
 import com.dcisman.dto.AuthResponse;
 import com.dcisman.dto.LoginRequest;
 import com.dcisman.dto.RegisterRequest;
+import com.dcisman.dto.UpdateProfileRequest;
 import com.dcisman.entity.User;
 import com.dcisman.exception.BadRequestException;
 import com.dcisman.repository.UserRepository;
@@ -59,6 +60,8 @@ public class AuthService {
                 .username(savedUser.getUsername())
                 .email(savedUser.getEmail())
                 .role(savedUser.getRole().name())
+                .name(savedUser.getName())
+                .idNumber(savedUser.getIdNumber())
                 .build();
     }
 
@@ -92,11 +95,36 @@ public class AuthService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole().name())
+                .name(user.getName())
+                .idNumber(user.getIdNumber())
                 .build();
     }
 
     public User getCurrentUser(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new BadRequestException("User not found: " + username));
+    }
+
+    @Transactional
+    public User updateProfile(String username, UpdateProfileRequest request) {
+        log.info("Attempting to update profile for user: {}", username);
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BadRequestException("User not found: " + username));
+
+        // Update name if provided
+        if (request.getName() != null) {
+            user.setName(request.getName().trim().isEmpty() ? null : request.getName().trim());
+        }
+
+        // Update ID number if provided
+        if (request.getIdNumber() != null) {
+            user.setIdNumber(request.getIdNumber().trim().isEmpty() ? null : request.getIdNumber().trim());
+        }
+
+        User updatedUser = userRepository.save(user);
+        log.info("Profile updated successfully for user: {}", username);
+
+        return updatedUser;
     }
 }

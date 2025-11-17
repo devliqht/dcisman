@@ -18,6 +18,8 @@ public class AuthResponse {
     private String username;
     private String email;
     private String role;
+    private String name;
+    private String idNumber;
 
     public AuthResponse(String token, Long id, String username, String email, String role) {
         this.token = token;
@@ -25,5 +27,15 @@ public class AuthResponse {
         this.username = username;
         this.email = email;
         this.role = role;
+    }
+
+    public AuthResponse(String token, Long id, String username, String email, String role, String name, String idNumber) {
+        this.token = token;
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.role = role;
+        this.name = name;
+        this.idNumber = idNumber;
     }
 }

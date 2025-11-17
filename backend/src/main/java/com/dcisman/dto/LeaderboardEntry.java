@@ -13,6 +13,8 @@ public class LeaderboardEntry {
 
     private Long userId;
     private String username;
+    private String name;
+    private String idNumber;
     private Integer value;
     private Integer rank;
 }

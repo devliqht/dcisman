@@ -28,6 +28,12 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    @Column(length = 100)
+    private String name;
+
+    @Column(name = "id_number", length = 8)
+    private String idNumber;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
