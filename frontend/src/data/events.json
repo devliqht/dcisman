@@ -1,13 +1,13 @@
 [
   {
     "id": "1",
-    "title": "DCISMAN Launch: P300 CASH PRIZE",
+    "title": "IMPORTANT ANNOUNCEMENT",
     "dateRange": {
       "start": "2025-12-1",
       "end": "2025-12-12"
     },
-    "description": "Welcome to DCISMan! As a challenge to the community, DCISMAN is hosting a P300 cash prize event for the Top 1 player. Good luck and have fun! Starts at December 1, 2025 - December 12, 2025. Valid for registered users only.",
+    "description": "Hello everyone! As you might have known, there are people who are well and knowledgeable about networks to update their stats through making direct API calls to the backend. This was something I expected from the start since this project is publicly hosted on GitHub, with all the documentation for the routes and the code exposed. I did not bother to add an anti-cheat nor a sophisticated security system, to maintain the game's simplicity and for easy checking on my prof's end. Thus, I am cancelling the P300 cash prize as that was an oversight on my side. I love the Sir Godwin reference. I will try my best to monitor and maintain this project, though do not expect that this will still be online after finals! Thank you for everyone playing the game, and even those that did update their stats illegitimately, I hope that you also had fun testing out the APIs! ",
     "author": "Matt Cabarrubias",
-    "publishedDate": "2025-11-7"
+    "publishedDate": "2025-11-27"
   }
 ]
