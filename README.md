@@ -1,3 +1,5 @@
+### This project has been closed and graded. Thank you to everyone who participated (and hacked.. cool)!
+
 # DCISMan - Pac-Man Inspired Game
 
 #### A web-based game inspired by Pac-Man with user authentication, leaderboard, and admin panel.
